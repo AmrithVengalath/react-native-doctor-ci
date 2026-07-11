@@ -4,8 +4,6 @@
  * @packageDocumentation
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import type {
   EnrichedDependency,
   EnrichmentOptions,
@@ -15,7 +13,7 @@ import type {
   Signal,
   UnknownReason,
 } from "./types.js";
-import { readCacheFile, writeCacheFile, getFreshEntry, putEntry } from "./cache.js";
+import { readCacheFile, writeCacheFile, getFreshEntry, putEntry, isEntryDegraded } from "./cache.js";
 import { mapWithConcurrency } from "./concurrency.js";
 import { checkLibraries, fetchLibraryDetails } from "./sources/directory.js";
 import { fetchNpmLatestManifest, searchNpmForPackage, parseGithubUrl as parseGithubUrlNpm } from "./sources/npm.js";
@@ -55,16 +53,6 @@ export function computeNewArchTier(dep: {
   }
 
   return "unknown";
-}
-
-/**
- * Create a Signal for a value, or return unknown with a reason.
- */
-function signal<T>(known: boolean, value: T | undefined, source: string, reason?: UnknownReason): Signal<T> {
-  if (known && value !== undefined) {
-    return { known: true, value, source };
-  }
-  return { known: false, reason: reason || ("npm-lookup-failed" as UnknownReason) };
 }
 
 /**
@@ -116,7 +104,6 @@ export async function enrichDependencies(
 
   // Phase 1: Batch directory check
   const directoryCheckOutcome = await checkLibraries(toFetch);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const directoryCheckData: Record<string, any> = (directoryCheckOutcome.status === "ok"
     ? directoryCheckOutcome.data
     : {}) as Record<string, any>;
@@ -138,10 +125,8 @@ export async function enrichDependencies(
     concurrency,
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const npmData: Record<string, any> = {};
   for (const { name, outcome } of npmManifests) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (outcome.status === "ok") {
       (npmData as any)[name] = outcome.data;
     } else if (outcome.status === "not-found") {
@@ -175,27 +160,29 @@ export async function enrichDependencies(
     owner: string;
     repo: string;
   }> = [];
+  // Track which packages had a resolvable repo URL, so the "no repo at all" case
+  // reports "no-repo-url" rather than the misleading "no-github-token".
+  const packagesWithRepoUrl = new Set<string>();
 
   for (const name of toFetch) {
     let repoUrl: string | undefined;
 
     // Try directory first
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dirDetail = (directoryDetails as any)[name];
     if (dirDetail && typeof dirDetail === "object" && "githubUrl" in dirDetail) {
       repoUrl = (dirDetail as any).githubUrl;
     }
 
     // Fallback to npm
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!repoUrl && (npmData as any)[name]?.repository?.url) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       repoUrl = (npmData as any)[name].repository.url;
     }
 
     if (!repoUrl) {
       continue;
     }
+
+    packagesWithRepoUrl.add(name);
 
     // Try to parse as GitHub
     let parsed = parseGithubUrlGithub(repoUrl);
@@ -228,20 +215,18 @@ export async function enrichDependencies(
       });
       break;
     } else if (outcome.status === "error") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (githubData as any)[name] = { error: outcome.message };
     }
   }
 
   // Phase 6: Assemble enriched dependencies
   for (const name of toFetch) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const npm = (npmData as any)[name] || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dirCheck = (directoryCheckData as any)[name] || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // `dirCheck` is `{}` for unlisted packages, and `Boolean({})` is truthy — so listing
+    // must be decided by presence of the key, not the object's truthiness.
+    const listedInDirectory = Object.prototype.hasOwnProperty.call(directoryCheckData, name);
     const dirDetail = (directoryDetails as any)[name] || {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const github = (githubData as any)[name];
 
     // Determine npm status
@@ -311,8 +296,13 @@ export async function enrichDependencies(
         pushedAtSignal = { known: false, reason: githubBreaker.isTripped() ? "github-rate-limited" : "no-github-token" };
       }
     } else {
-      archivedSignal = { known: false, reason: githubBreaker.isTripped() ? "github-rate-limited" : "no-github-token" };
-      pushedAtSignal = { known: false, reason: githubBreaker.isTripped() ? "github-rate-limited" : "no-github-token" };
+      const noGithubReason: UnknownReason = githubBreaker.isTripped()
+        ? "github-rate-limited"
+        : packagesWithRepoUrl.has(name)
+          ? "no-github-token"
+          : "no-repo-url";
+      archivedSignal = { known: false, reason: noGithubReason };
+      pushedAtSignal = { known: false, reason: noGithubReason };
     }
 
     // Resolve github URL
@@ -346,7 +336,7 @@ export async function enrichDependencies(
 
     // Build rnNativeReasons
     const rnNativeReasons: ("directory-listed" | "peer-dependency" | "native-files-hint")[] = [];
-    if (Boolean(dirCheck)) {
+    if (listedInDirectory) {
       rnNativeReasons.push("directory-listed");
     }
     if (hasReactNativePeerDep.known && hasReactNativePeerDep.value) {
@@ -356,7 +346,7 @@ export async function enrichDependencies(
       rnNativeReasons.push("native-files-hint");
     }
 
-    const isRnNative = Boolean(dirCheck) || (hasReactNativePeerDep.known && hasReactNativePeerDep.value) ||
+    const isRnNative = listedInDirectory || (hasReactNativePeerDep.known && hasReactNativePeerDep.value) ||
       (hasNativeDirsHint.known && hasNativeDirsHint.value);
 
     // Compute newArch tier
@@ -399,17 +389,21 @@ export async function enrichDependencies(
         hasCodegenConfig,
         hasReactNativePeerDep,
         hasNativeDirsHint,
-        repositoryUrl: npm.repository?.url || null,
+        repositoryUrl: npm.repository?.url ? String(npm.repository.url).replace(/^git\+/, "") : null,
       },
       directory: {
-        listed: Boolean(dirCheck),
+        listed: listedInDirectory,
         unmaintained: Boolean(dirCheck.unmaintained),
         newArchitectureRaw: (dirCheck.newArchitecture as any) || null,
-        githubUrl,
+        // Directory-sourced URL only; the npm-derived fallback belongs to `github.repoUrl`.
+        githubUrl: dirDetail && typeof dirDetail === "object" ? (dirDetail as any).githubUrl || null : null,
         lastPublishedAt:
           (dirDetail && typeof dirDetail === "object" && (dirDetail as any).npm?.latestReleaseDate) || null,
+        // `?? null` (not `|| null`) so a genuine `false` (repo not archived) survives.
         githubArchived:
-          (dirDetail && typeof dirDetail === "object" && (dirDetail as any).github?.isArchived) || null,
+          dirDetail && typeof dirDetail === "object" && typeof (dirDetail as any).github?.isArchived === "boolean"
+            ? (dirDetail as any).github.isArchived
+            : null,
         githubPushedAt:
           (dirDetail && typeof dirDetail === "object" && (dirDetail as any).github?.stats?.pushedAt) || null,
         matchingScoreModifiers:
@@ -435,12 +429,13 @@ export async function enrichDependencies(
 
     enriched.push(enrichedDep);
 
-    // Write to cache
+    // Write to cache — but never persist a degraded (transient-failure) entry, so a
+    // momentary rate-limit or network blip can't poison future runs with stale unknowns.
     if (!options.noCache) {
-      cache = putEntry(cache, {
-        fetchedAt: new Date().toISOString(),
-        enriched: enrichedDep,
-      });
+      const candidate = { fetchedAt: new Date().toISOString(), enriched: enrichedDep };
+      if (!isEntryDegraded(candidate)) {
+        cache = putEntry(cache, candidate);
+      }
     }
   }
 

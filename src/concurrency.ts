@@ -20,14 +20,12 @@ export async function mapWithConcurrency<T, R>(
   }
 
   // Use a mutable array to hold results
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const results: any[] = Array.from({ length: items.length });
   let index = 0;
 
   const worker = async (): Promise<void> => {
     let currentIndex = index++;
     while (currentIndex < items.length) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (results as any)[currentIndex] = await fn(items[currentIndex]!);
       currentIndex = index++;
     }

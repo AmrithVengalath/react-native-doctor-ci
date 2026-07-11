@@ -61,7 +61,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "github-api",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "supported",
       evidence: { directoryVerdict: "supported", hasCodegenConfig: false },
@@ -146,7 +146,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "directory-fallback",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "supported",
       evidence: { directoryVerdict: "supported", hasCodegenConfig: false },
@@ -183,7 +183,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "directory-fallback",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "unsupported",
       evidence: { directoryVerdict: "unsupported", hasCodegenConfig: false },
@@ -220,7 +220,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "directory-fallback",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "unknown",
       evidence: { directoryVerdict: "untested", hasCodegenConfig: false },
@@ -257,7 +257,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "github-api",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "unsupported",
       evidence: { directoryVerdict: "unsupported", hasCodegenConfig: false },
@@ -346,13 +346,10 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
   // 9th scenario: rate-limited (reuse healthy's npm/directory data, but GitHub returns 403)
   rateLimited: {
     name: "react-native-webview",
-    warnings: [
-      {
-        source: "github",
-        message:
-          "GitHub API rate-limited after checking dependencies; remaining packages fall back to cached GitHub data or unknown",
-      },
-    ],
+    // The rate-limit warning is a run-level concern (it announces that *remaining*
+    // packages will degrade), so the orchestrator emits it on EnrichmentResult.warnings,
+    // not on this dependency. The dependency itself carries no warning.
+    warnings: [],
     npm: {
       found: true,
       latestVersion: "14.0.1",
@@ -386,7 +383,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       source: "directory-fallback",
     },
     isRnNative: true,
-    rnNativeReasons: ["directory-listed"],
+    rnNativeReasons: ["directory-listed", "peer-dependency"],
     newArch: {
       tier: "supported",
       evidence: { directoryVerdict: "supported", hasCodegenConfig: false },

@@ -27,7 +27,6 @@ import githubHealthy from "./github/repo-healthy.json" with { type: "json" };
 import githubDeprecated from "./github/repo-deprecated.json" with { type: "json" };
 import githubNewArchUnsupported from "./github/repo-new-arch-unsupported.json" with { type: "json" };
 import githubUnknownWithCodegen from "./github/repo-unknown-with-codegen.json" with { type: "json" };
-import githubRateLimited from "./github/rate-limited.json" with { type: "json" };
 
 const npmFixtures: Record<string, unknown> = {
   [FIXTURE_PACKAGE_NAMES.healthy]: npmHealthy,
@@ -48,11 +47,22 @@ const directoryDetailFixtures: Record<string, unknown> = {
   [FIXTURE_PACKAGE_NAMES.newArchUnsupported]: dirNewArchUnsupported,
 };
 
-const githubFixtures: Record<string, unknown> = {
-  [FIXTURE_PACKAGE_NAMES.healthy]: githubHealthy,
-  [FIXTURE_PACKAGE_NAMES.deprecated]: githubDeprecated,
-  [FIXTURE_PACKAGE_NAMES.newArchUnsupported]: githubNewArchUnsupported,
-  [FIXTURE_PACKAGE_NAMES.unknownWithCodegen]: githubUnknownWithCodegen,
+// Keyed by `${owner}/${repo}` — the identity the orchestrator actually derives from
+// npm/directory metadata. Any repo absent here 404s, which is exactly how the
+// directory-fallback fixtures (archived / stale / unmaintained) are meant to degrade.
+const githubApiByRepo: Record<string, unknown> = {
+  "react-native-webview/react-native-webview": githubHealthy,
+  "request/request": githubDeprecated,
+  "example/react-native-legacy-bridge": githubNewArchUnsupported,
+  "example/my-rn-codegen-package": githubUnknownWithCodegen,
+};
+
+// npm's search endpoint is the only source of a package's last-publish *date* (the
+// /latest manifest doesn't carry it), so the search-sourced fixtures map their dates here.
+const npmSearchDates: Record<string, string> = {
+  request: "2023-08-08T14:08:07Z",
+  "my-rn-codegen-package": "2024-06-01T12:00:00Z",
+  "left-pad": "2017-02-20T19:07:57.149Z",
 };
 
 /**
@@ -76,35 +86,19 @@ export function createFixtureHandlers() {
     // npm search endpoint
     http.get("https://registry.npmjs.org/-/v1/search", ({ request }) => {
       const url = new URL(request.url);
-      const text = url.searchParams.get("text");
+      const text = url.searchParams.get("text") || "";
+      const date = npmSearchDates[text];
 
-      // For fixtures, return a minimal search result for the known packages
-      const knownPackages = Object.values(FIXTURE_PACKAGE_NAMES) as string[];
-      const match = knownPackages.find((pkg) => pkg.includes(text || ""));
-
-      if (!match) {
+      if (!date) {
         return new Response(JSON.stringify({ objects: [] }), { status: 200 });
       }
 
-      const fixture = npmFixtures[match] as any;
-      if (fixture) {
-        return new Response(
-          JSON.stringify({
-            objects: [
-              {
-                package: {
-                  name: match,
-                  version: fixture.version || "1.0.0",
-                  date: fixture.date || new Date().toISOString(),
-                },
-              },
-            ],
-          }),
-          { status: 200 },
-        );
-      }
-
-      return new Response(JSON.stringify({ objects: [] }), { status: 200 });
+      return new Response(
+        JSON.stringify({
+          objects: [{ package: { name: text, version: "0.0.0", date } }],
+        }),
+        { status: 200 },
+      );
     }),
 
     // RN Directory check endpoint
@@ -150,20 +144,14 @@ export function createFixtureHandlers() {
     http.get("https://api.github.com/repos/:owner/:repo", ({ params }) => {
       const owner = params.owner as string;
       const repo = params.repo as string;
+      const fixture = githubApiByRepo[`${owner}/${repo}`];
 
-      // Build a fake repo name from parts for fixture lookup
-      // This is simplified; in real tests we'd make lookups more sophisticated
-      const key = `${owner}/${repo}`;
-
-      // Map fixture lookups
-      for (const [pkgName, fixture] of Object.entries(githubFixtures)) {
-        const detail = directoryDetailFixtures[pkgName] as any;
-        if (detail?.githubUrl?.includes(key)) {
-          return new Response(JSON.stringify(fixture), { status: 200 });
-        }
+      if (fixture) {
+        return new Response(JSON.stringify(fixture), { status: 200 });
       }
 
-      return new Response(JSON.stringify({ archived: false }), { status: 200 });
+      // Unknown repo → 404, so the orchestrator falls back to RN Directory data.
+      return new Response(JSON.stringify({ message: "Not Found" }), { status: 404 });
     }),
   ];
 }

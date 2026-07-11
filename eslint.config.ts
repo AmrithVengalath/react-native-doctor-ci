@@ -21,4 +21,21 @@ export default tseslint.config(
       },
     },
   },
+  {
+    // The data-source boundary parses inherently-untyped external JSON (npm registry,
+    // RN Directory, GitHub) and the MSW fixtures that emulate it, so `any` is
+    // unavoidable here. Typed runtime validation is a deliberate future hardening step
+    // (see DECISIONS ADR); until then these files opt out of the unsafe-any family.
+    // Public, typed surfaces (types.ts, the Phase 2+ policy engine) stay strict.
+    files: ["src/sources/**/*.ts", "src/enrich.ts", "src/concurrency.ts", "src/testing/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    },
+  },
 );

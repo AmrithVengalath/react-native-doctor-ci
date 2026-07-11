@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import type { EnrichedDependency, EnrichmentWarning } from "./types.js";
+import type { EnrichedDependency, Signal, UnknownReason } from "./types.js";
 
 export interface CacheEntry {
   readonly fetchedAt: string; // ISO 8601
@@ -25,13 +25,27 @@ const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
  * Transient reasons indicate the entry may be incomplete and shouldn't be re-used across runs.
  */
 function isDegraded(entry: CacheEntry): boolean {
-  const transientReasons = new Set([
+  // Only *transient* unknowns (a blip, a rate-limit) make an entry degraded. Durable
+  // unknowns (no repo URL, not in the directory, a real 404) are the true answer and
+  // are safe to cache — re-fetching wouldn't change them.
+  const transientReasons = new Set<UnknownReason>([
     "github-rate-limited",
     "github-error",
     "npm-lookup-failed",
   ]);
 
-  return entry.enriched.warnings.some((w) => transientReasons.has(w.source as any));
+  const dep = entry.enriched;
+  const signals: Signal<unknown>[] = [
+    dep.npm.deprecated,
+    dep.npm.hasCodegenConfig,
+    dep.npm.hasReactNativePeerDep,
+    dep.npm.hasNativeDirsHint,
+    dep.github.archived,
+    dep.github.pushedAt,
+    dep.lastPublish,
+  ];
+
+  return signals.some((s) => !s.known && transientReasons.has(s.reason));
 }
 
 /**
@@ -79,21 +93,14 @@ export function getFreshEntry(
     return undefined;
   }
 
-  const fetchedAt = new Date(entry.fetchedAt);
-  const age = now.getTime() - fetchedAt.getTime();
+  const age = now.getTime() - new Date(entry.fetchedAt).getTime();
 
-  // Fresh + not degraded → cache hit
-  if (age < TTL_MS && !isDegraded(entry)) {
-    return entry;
+  // Expired, or degraded by a transient failure → treat as a miss and re-fetch.
+  if (age >= TTL_MS || isDegraded(entry)) {
+    return undefined;
   }
 
-  // Fresh but degraded → usable within this run, but treat as expired for next
-  // Fresh and not degraded → cache hit
-  if (age < TTL_MS) {
-    return entry; // Reuse within the current run
-  }
-
-  return undefined; // Expired
+  return entry;
 }
 
 /**

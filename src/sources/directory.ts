@@ -105,7 +105,6 @@ export async function fetchLibraryDetails(
   packageNames: readonly string[],
   concurrency = 8,
 ): Promise<Record<string, DirectoryLibraryDetail>> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const outcomes: any[] = await mapWithConcurrency(
     packageNames,
     (name) => fetchLibraryDetail(name),
@@ -115,10 +114,8 @@ export async function fetchLibraryDetails(
   const results: Record<string, DirectoryLibraryDetail> = {};
 
   for (let i = 0; i < outcomes.length; i++) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const outcome = (outcomes as any)[i];
     if (outcome?.status === "ok") {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       results[(packageNames as any)[i]] = outcome.data;
     }
   }
