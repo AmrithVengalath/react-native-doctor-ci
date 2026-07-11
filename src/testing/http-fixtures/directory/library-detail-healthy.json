@@ -1,0 +1,20 @@
+{
+  "githubUrl": "https://github.com/react-native-webview/react-native-webview",
+  "github": {
+    "isArchived": false,
+    "stats": {
+      "pushedAt": "2026-07-11T10:19:37Z"
+    }
+  },
+  "npm": {
+    "latestReleaseDate": "2026-06-20T23:27:50.592Z"
+  },
+  "matchingScoreModifiers": [
+    "Very popular",
+    "Popular",
+    "Known",
+    "Recently updated",
+    "Has a README file",
+    "Has a description"
+  ]
+}

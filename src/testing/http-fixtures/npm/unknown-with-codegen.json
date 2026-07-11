@@ -1,0 +1,28 @@
+{
+  "name": "my-rn-codegen-package",
+  "version": "1.0.0",
+  "description": "A package with codegen config",
+  "deprecated": false,
+  "codegenConfig": {
+    "name": "mycodegen",
+    "type": "all",
+    "jsSrcsDir": "./src/specs",
+    "android": {
+      "javaPackageName": "com.example"
+    },
+    "ios": {
+      "componentProvider": {
+        "MyComponent": "MyComponentView"
+      }
+    }
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/example/my-rn-codegen-package.git"
+  },
+  "files": ["lib", "src"]
+}

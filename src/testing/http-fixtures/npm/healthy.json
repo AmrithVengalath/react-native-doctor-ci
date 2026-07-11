@@ -1,0 +1,16 @@
+{
+  "name": "react-native-webview",
+  "version": "14.0.1",
+  "description": "React Native WebView component for iOS, Android, macOS, and Windows",
+  "deprecated": false,
+  "codegenConfig": null,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.60"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-native-webview/react-native-webview.git"
+  },
+  "files": ["dist", "src"]
+}

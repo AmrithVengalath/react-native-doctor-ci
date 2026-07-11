@@ -1,0 +1,16 @@
+{
+  "name": "react-native-legacy-bridge",
+  "version": "1.0.0",
+  "description": "Legacy React Native bridge example",
+  "deprecated": false,
+  "codegenConfig": null,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/example/react-native-legacy-bridge.git"
+  },
+  "files": ["lib"]
+}

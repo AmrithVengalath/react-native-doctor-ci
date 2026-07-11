@@ -1,0 +1,16 @@
+{
+  "name": "react-native-ab",
+  "version": "0.1.5",
+  "description": "React Native A/B testing",
+  "deprecated": false,
+  "codegenConfig": null,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lwansbrough/react-native-ab.git"
+  },
+  "files": ["lib"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "request",
+  "version": "2.88.2",
+  "description": "Simplified HTTP client",
+  "deprecated": "request has been deprecated, see https://github.com/request/request/issues/3142",
+  "codegenConfig": null,
+  "peerDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/request/request.git"
+  },
+  "files": ["lib"]
+}

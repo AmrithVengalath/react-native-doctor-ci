@@ -1,0 +1,10 @@
+{
+  "name": "left-pad",
+  "version": "1.3.0",
+  "description": "String left-padding",
+  "deprecated": "use String.prototype.padStart()",
+  "codegenConfig": null,
+  "peerDependencies": {},
+  "repository": null,
+  "files": ["index.js"]
+}

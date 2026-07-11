@@ -3,3 +3,6 @@
 # needs its install script allowed to link that binary.
 allowBuilds:
   esbuild: true
+  msw: true
+minimumReleaseAgeExclude:
+  - eslint@10.7.0

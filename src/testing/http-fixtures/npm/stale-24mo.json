@@ -1,0 +1,16 @@
+{
+  "name": "react-native-markdown",
+  "version": "0.3.1",
+  "description": "React Native markdown component",
+  "deprecated": false,
+  "codegenConfig": null,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lwansbrough/react-native-markdown.git"
+  },
+  "files": ["lib"]
+}

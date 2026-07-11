@@ -1,0 +1,20 @@
+{
+  "react-native-webview": {
+    "newArchitecture": "supported"
+  },
+  "react-native-htmltext": {
+    "unmaintained": true,
+    "newArchitecture": "supported"
+  },
+  "react-native-markdown": {
+    "unmaintained": true,
+    "newArchitecture": "unsupported"
+  },
+  "react-native-ab": {
+    "unmaintained": true,
+    "newArchitecture": "untested"
+  },
+  "react-native-legacy-bridge": {
+    "newArchitecture": "unsupported"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "react-native-htmltext",
+  "version": "0.7.2",
+  "description": "Use HTML like markup to create stylized text in react-native.",
+  "deprecated": false,
+  "codegenConfig": null,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siuying/react-native-htmltext.git"
+  },
+  "files": ["lib"]
+}

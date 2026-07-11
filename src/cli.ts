@@ -7,11 +7,11 @@ Usage:
   rn-doctor [options]
 
 Options:
-  -v, --version   Print the version and exit
-  -h, --help      Show this help and exit
+  -v, --version    Print the version and exit
+  -h, --help       Show this help and exit
+  --no-cache       Bypass cache (read and write)
 
-The checks (dependency enrichment, policy evaluation, reporters) are not wired
-up yet — this is an early scaffold.
+The enrichment engine is wired up; the policy engine and reporters land in Phase 2.
 `;
 
 /**
@@ -35,8 +35,10 @@ function main(argv: readonly string[]): number {
     return 0;
   }
 
-  // Everything else prints usage for now. No checks are implemented, so there
-  // is nothing to fail on: exit clean.
+  // Recognize --no-cache but don't do anything with it yet (inert stub for Phase 1)
+  // The enrichment engine itself handles this option in Phase 2's wiring
+
+  // Everything else prints usage for now. No policy evaluation or reporters yet.
   process.stdout.write(USAGE);
   return 0;
 }
