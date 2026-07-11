@@ -1,0 +1,5 @@
+# pnpm 11 reads project settings from here (not the "pnpm" field in
+# package.json). esbuild ships a prebuilt binary via an optional dependency and
+# needs its install script allowed to link that binary.
+allowBuilds:
+  esbuild: true

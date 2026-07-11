@@ -1,0 +1,43 @@
+name: Bug report
+description: Something in rn-doctor is broken or reporting wrong results
+labels: ["bug"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Package and version
+      description: Output of `npx rn-doctor --version` (or the version from your lockfile).
+      placeholder: react-native-doctor-ci@0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where are you running it?
+      placeholder: |
+        - OS: macOS 15 / Ubuntu 24.04 / Windows 11
+        - Node: 20.x
+        - Package manager: npm / yarn / pnpm (+ workspaces? yes/no)
+        - Where: locally / GitHub Actions (which runner?) / other CI
+        - React Native version of the project being checked: 0.7x
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact command run, relevant `.rn-doctor.yml` contents, and the dependency (or minimal package.json) that triggers it. If it's cache-related, note whether `--no-cache` changes the result.
+      placeholder: |
+        1. Policy file: ...
+        2. Run `npx rn-doctor --changed-only --base origin/main`
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected vs actual behavior
+      description: What you expected, and what actually happened. Paste the relevant output (table / JSON / annotation / exit code).
+    validations:
+      required: true

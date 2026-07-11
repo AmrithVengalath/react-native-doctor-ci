@@ -1,0 +1,67 @@
+{
+  "name": "react-native-doctor-ci",
+  "version": "0.0.0",
+  "description": "Policy-as-code CI gate for React Native dependency health: fail PRs that add abandoned, non-New-Architecture, or npm-deprecated dependencies.",
+  "keywords": [
+    "react-native",
+    "ci",
+    "dependencies",
+    "new-architecture",
+    "policy",
+    "lint",
+    "github-actions",
+    "sarif"
+  ],
+  "license": "MIT",
+  "author": "Amrith Vengalath",
+  "type": "module",
+  "bin": {
+    "rn-doctor": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.11.0",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "pnpm run build",
+    "release": "release-it"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@release-it/conventional-changelog": "^11.0.1",
+    "@types/node": "^20.19.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.7.0",
+    "jiti": "^2.7.0",
+    "release-it": "^20.2.1",
+    "tsup": "^8.5.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.63.0",
+    "vitest": "^4.1.10"
+  }
+}

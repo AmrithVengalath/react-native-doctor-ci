@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest an improvement or new capability
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The project follows a phased roadmap, so even good ideas may be queued rather than picked up immediately.
+
+        **Out of scope (won't be accepted):**
+        - Security / CVE auditing (`npm audit` and dedicated scanners cover this)
+        - Fixing or upgrading dependencies for you (the tool reports and gates; it may *suggest* remedies)
+        - A website or hosted service (CLI / CI only)
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem would this solve? Describe the situation, not the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How you'd like it to work — flags, policy file syntax, output, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you're using today, or other designs that could solve the same problem.
+    validations:
+      required: false
