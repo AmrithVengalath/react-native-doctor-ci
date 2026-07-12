@@ -1,0 +1,170 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderPretty — human-readable output > 8-fixture matrix under the default policy 1`] = `
+"error  react-native-htmltext  [githubArchived]
+    The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://github.com/siuying/react-native-htmltext
+
+warn  react-native-htmltext  [directoryUnmaintained]
+    react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-htmltext
+
+error  react-native-markdown  [newArchitecture]
+    react-native-markdown does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+warn  react-native-markdown  [directoryUnmaintained]
+    react-native-markdown is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+warn  react-native-ab  [newArchUnknown]
+    New Architecture support for react-native-ab is unknown: it is not listed in the RN Directory and its npm package has no codegen hints. Verify support manually (check the repo README/releases). If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-ab, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-ab
+
+warn  react-native-ab  [directoryUnmaintained]
+    react-native-ab is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-ab, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-ab
+
+error  react-native-legacy-bridge  [newArchitecture]
+    react-native-legacy-bridge does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-legacy-bridge
+
+error  react-native-legacy-bridge  [lastPublish]
+    react-native-legacy-bridge was last published 29 months ago (2024-01-15), exceeding the 24-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/react-native-legacy-bridge
+
+note  my-rn-codegen-package  [newArchitecture]
+    my-rn-codegen-package is not listed in the RN Directory, but its npm package ships a codegenConfig, which indicates New Architecture support. Treating as a pass; verify manually if this dependency is critical.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+error  my-rn-codegen-package  [lastPublish]
+    my-rn-codegen-package was last published 25 months ago (2024-06-01), exceeding the 24-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: my-rn-codegen-package, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+Data warnings (missing or degraded lookups - findings may be incomplete):
+  - [github] GitHub API rate limit reached without a GITHUB_TOKEN; remaining repositories degrade to unknown. Set GITHUB_TOKEN to raise the limit.
+  - [npm] left-pad: npm search returned no publish date; lastPublish is unknown.
+
+5 errors, 4 warnings, 1 note, 0 allowed across 8 dependencies.
+"
+`;
+
+exports[`renderPretty — human-readable output > 8-fixture matrix under the lenient-with-allowlist policy 1`] = `
+"error  react-native-htmltext  [githubArchived]
+    The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.
+    evidence: https://github.com/siuying/react-native-htmltext
+
+error  react-native-htmltext  [directoryUnmaintained]
+    react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.
+    evidence: https://reactnative.directory/?search=react-native-htmltext
+
+allowed(warn)  react-native-markdown  [newArchitecture]
+    react-native-markdown does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    allowed by .rn-doctor.yml: migration planned Q4 2026, expires 2026-12-31
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+allowed(warn)  react-native-markdown  [directoryUnmaintained]
+    react-native-markdown is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    allowed by .rn-doctor.yml: migration planned Q4 2026, expires 2026-12-31
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+warn  react-native-ab  [directoryUnmaintained]
+    react-native-ab is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-ab, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-ab
+
+warn  react-native-legacy-bridge  [newArchitecture]
+    react-native-legacy-bridge does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-legacy-bridge
+
+warn  react-native-legacy-bridge  [lastPublish]
+    react-native-legacy-bridge was last published 29 months ago (2024-01-15), exceeding the 24-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/react-native-legacy-bridge
+
+note  my-rn-codegen-package  [newArchitecture]
+    my-rn-codegen-package is not listed in the RN Directory, but its npm package ships a codegenConfig, which indicates New Architecture support. Treating as a pass; verify manually if this dependency is critical.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+warn  my-rn-codegen-package  [lastPublish]
+    my-rn-codegen-package was last published 25 months ago (2024-06-01), exceeding the 24-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: my-rn-codegen-package, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+Data warnings (missing or degraded lookups - findings may be incomplete):
+  - [github] GitHub API rate limit reached without a GITHUB_TOKEN; remaining repositories degrade to unknown. Set GITHUB_TOKEN to raise the limit.
+  - [npm] left-pad: npm search returned no publish date; lastPublish is unknown.
+
+2 errors, 4 warnings, 1 note, 2 allowed across 8 dependencies.
+"
+`;
+
+exports[`renderPretty — human-readable output > 8-fixture matrix under the strict-all-deps policy 1`] = `
+"error  request  [newArchUnknown]
+    New Architecture support for request is unknown: it is not listed in the RN Directory and its npm package has no codegen hints. Verify support manually (check the repo README/releases). If this is intentional, allowlist it in .rn-doctor.yml: { package: request, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=request
+
+error  request  [lastPublish]
+    request was last published 35 months ago (2023-08-08), exceeding the 12-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: request, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/request
+
+error  request  [npmDeprecated]
+    request is deprecated on npm: "request has been deprecated, see https://github.com/request/request/issues/3142". Follow the deprecation notice to migrate. If this is intentional, allowlist it in .rn-doctor.yml: { package: request, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/request
+
+error  react-native-htmltext  [githubArchived]
+    The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://github.com/siuying/react-native-htmltext
+
+error  react-native-htmltext  [directoryUnmaintained]
+    react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-htmltext
+
+error  react-native-markdown  [newArchitecture]
+    react-native-markdown does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+error  react-native-markdown  [directoryUnmaintained]
+    react-native-markdown is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-markdown, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-markdown
+
+error  react-native-ab  [newArchUnknown]
+    New Architecture support for react-native-ab is unknown: it is not listed in the RN Directory and its npm package has no codegen hints. Verify support manually (check the repo README/releases). If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-ab, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-ab
+
+error  react-native-ab  [directoryUnmaintained]
+    react-native-ab is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-ab, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-ab
+
+error  react-native-legacy-bridge  [newArchitecture]
+    react-native-legacy-bridge does not support the React Native New Architecture (RN Directory verdict: unsupported). Look for a maintained alternative or check the repo for New Architecture plans. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=react-native-legacy-bridge
+
+error  react-native-legacy-bridge  [lastPublish]
+    react-native-legacy-bridge was last published 29 months ago (2024-01-15), exceeding the 12-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-legacy-bridge, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/react-native-legacy-bridge
+
+note  my-rn-codegen-package  [newArchitecture]
+    my-rn-codegen-package is not listed in the RN Directory, but its npm package ships a codegenConfig, which indicates New Architecture support. Treating as a pass; verify manually if this dependency is critical.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+error  my-rn-codegen-package  [lastPublish]
+    my-rn-codegen-package was last published 25 months ago (2024-06-01), exceeding the 12-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: my-rn-codegen-package, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/my-rn-codegen-package
+
+error  left-pad  [newArchUnknown]
+    New Architecture support for left-pad is unknown: it is not listed in the RN Directory and its npm package has no codegen hints. Verify support manually (check the repo README/releases). If this is intentional, allowlist it in .rn-doctor.yml: { package: left-pad, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://reactnative.directory/?search=left-pad
+
+error  left-pad  [lastPublish]
+    left-pad was last published 112 months ago (2017-02-20), exceeding the 12-month threshold. Check whether it is abandoned; consider a maintained fork, or let renovate surface a replacement. If this is intentional, allowlist it in .rn-doctor.yml: { package: left-pad, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/left-pad
+
+error  left-pad  [npmDeprecated]
+    left-pad is deprecated on npm: "use String.prototype.padStart()". Follow the deprecation notice to migrate. If this is intentional, allowlist it in .rn-doctor.yml: { package: left-pad, reason: "<why>", expires: YYYY-MM-DD }.
+    evidence: https://www.npmjs.com/package/left-pad
+
+Data warnings (missing or degraded lookups - findings may be incomplete):
+  - [github] GitHub API rate limit reached without a GITHUB_TOKEN; remaining repositories degrade to unknown. Set GITHUB_TOKEN to raise the limit.
+  - [npm] left-pad: npm search returned no publish date; lastPublish is unknown.
+
+15 errors, 0 warnings, 1 note, 0 allowed across 8 dependencies.
+"
+`;
