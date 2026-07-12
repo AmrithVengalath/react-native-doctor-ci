@@ -37,28 +37,30 @@ function commandFor(f: Finding): "error" | "warning" | "notice" {
  * Render the report as GitHub Actions workflow commands, one per finding.
  *
  * @remarks
- * Each command targets `package.json` with the dependency's declaration line
- * when `lineOf` resolves one (omitting `line=` otherwise), so annotations
- * land inline on the PR diff. Suppressed findings keep an annotation (as a
- * `notice` including the allow reason) so policy debt stays visible without
- * failing checks.
+ * Each command targets the finding's manifest (`package.json`, or e.g.
+ * `packages/a/package.json` under `--workspaces`) with the dependency's
+ * declaration line when `lineOf` resolves one (omitting `line=` otherwise),
+ * so annotations land inline on the PR diff. Suppressed findings keep an
+ * annotation (as a `notice` including the allow reason) so policy debt stays
+ * visible without failing checks.
  *
  * @param report - The report to render.
- * @param lineOf - Resolve a package's 1-based line in package.json, or `null`.
+ * @param lineOf - Resolve a package's 1-based declaration line in the
+ * manifest at `file` (the finding's cwd-relative path), or `null`.
  * @returns Newline-terminated workflow commands; empty string when there are
  * no findings.
  */
 export function renderAnnotations(
   report: Report,
-  lineOf: (packageName: string) => number | null,
+  lineOf: (file: string, packageName: string) => number | null,
 ): string {
   const lines: string[] = [];
 
   for (const f of report.findings) {
     const command = commandFor(f);
-    const line = lineOf(f.package);
+    const line = lineOf(f.file, f.package);
     const properties = [
-      `file=${escapeProperty("package.json")}`,
+      `file=${escapeProperty(f.file)}`,
       ...(line !== null ? [`line=${String(line)}`] : []),
       `title=${escapeProperty(`rn-doctor: ${f.rule} (${f.package})`)}`,
     ].join(",");

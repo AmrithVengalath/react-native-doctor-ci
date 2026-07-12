@@ -4,7 +4,15 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { ManifestError, findDependencyLine, listDependencies, readPackageJson } from "./package-json.js";
+import {
+  ManifestError,
+  entriesFromManifestText,
+  findDependencyLine,
+  listDependencies,
+  listDependencyEntries,
+  readManifestAt,
+  readPackageJson,
+} from "./package-json.js";
 
 describe("findDependencyLine", () => {
   const MANIFEST = [
@@ -74,6 +82,72 @@ describe("listDependencies", () => {
 
   it("rejects a non-object manifest", () => {
     expect(() => listDependencies("not json object")).toThrow(ManifestError);
+  });
+});
+
+describe("listDependencyEntries", () => {
+  it("preserves authored order with specs", () => {
+    expect(listDependencyEntries({ dependencies: { zebra: "^1.0.0", alpha: "~2.0.0" } })).toEqual([
+      { name: "zebra", spec: "^1.0.0" },
+      { name: "alpha", spec: "~2.0.0" },
+    ]);
+  });
+
+  it("returns empty when the section is absent", () => {
+    expect(listDependencyEntries({ name: "x" })).toEqual([]);
+  });
+
+  it("rejects a non-string version spec, naming the dependency", () => {
+    expect(() => listDependencyEntries({ dependencies: { a: 1 } }, "here")).toThrow(
+      /here has a non-string version for dependency "a"/,
+    );
+  });
+});
+
+describe("entriesFromManifestText", () => {
+  it("parses a raw manifest blob", () => {
+    expect(entriesFromManifestText('{"dependencies":{"a":"^1.0.0"}}', "blob")).toEqual([
+      { name: "a", spec: "^1.0.0" },
+    ]);
+  });
+
+  it("tolerates a UTF-8 BOM", () => {
+    expect(entriesFromManifestText("\uFEFF" + '{"dependencies":{"a":"1"}}', "blob")).toEqual([
+      { name: "a", spec: "1" },
+    ]);
+  });
+
+  it("throws ManifestError naming the location on invalid JSON", () => {
+    expect(() => entriesFromManifestText("{ nope", "package.json at origin/main")).toThrow(
+      /package\.json at origin\/main is not valid JSON/,
+    );
+  });
+});
+
+describe("readManifestAt", () => {
+  let dir: string | null = null;
+
+  afterEach(async () => {
+    if (dir) await rm(dir, { recursive: true, force: true });
+    dir = null;
+  });
+
+  it("reads a manifest at an exact path with entries", async () => {
+    dir = await mkdtemp(join(tmpdir(), "rn-doctor-test-"));
+    const path = join(dir, "package.json");
+    await writeFile(path, '{\n  "dependencies": {\n    "left-pad": "^1.3.0"\n  }\n}\n', "utf8");
+
+    const manifest = await readManifestAt(path);
+    expect(manifest.path).toBe(path);
+    expect(manifest.entries).toEqual([{ name: "left-pad", spec: "^1.3.0" }]);
+    expect(manifest.dependencies).toEqual(["left-pad"]);
+  });
+
+  it("uses the provided missing-file message", async () => {
+    dir = await mkdtemp(join(tmpdir(), "rn-doctor-test-"));
+    await expect(readManifestAt(join(dir, "package.json"), "custom message")).rejects.toThrow(
+      "custom message",
+    );
   });
 });
 

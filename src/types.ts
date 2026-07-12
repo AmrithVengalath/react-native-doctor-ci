@@ -43,7 +43,7 @@ export type RnNativeReason = "directory-listed" | "peer-dependency" | "native-fi
  */
 export interface EnrichmentWarning {
   readonly dependency?: string;   // Omitted for run-level warnings
-  readonly source: "npm" | "directory" | "github" | "cache";
+  readonly source: "npm" | "directory" | "github" | "cache" | "git" | "workspaces";
   readonly message: string;       // Actionable, human-readable
 }
 

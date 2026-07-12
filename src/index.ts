@@ -29,8 +29,8 @@ export type {
 export { DEFAULT_POLICY_FILENAME, PolicyError, loadPolicy, parsePolicy } from "./policy-file.js";
 
 // Re-export public API from the reporters (Phase 3)
-export { computeExitCode, summarize } from "./report.js";
-export type { FindingSummary, Report } from "./report.js";
+export { computeExitCode, locateFindings, summarize } from "./report.js";
+export type { FindingSummary, Report, ReportFinding } from "./report.js";
 export { renderJson } from "./report-json.js";
 export { renderSarif } from "./report-sarif.js";
 export type { SarifOptions } from "./report-sarif.js";
@@ -39,11 +39,21 @@ export type { PrettyOptions } from "./report-pretty.js";
 export { renderAnnotations } from "./report-annotations.js";
 export {
   ManifestError,
+  entriesFromManifestText,
   findDependencyLine,
   listDependencies,
+  listDependencyEntries,
+  readManifestAt,
   readPackageJson,
 } from "./package-json.js";
-export type { ProjectManifest } from "./package-json.js";
+export type { DependencyEntry, ProjectManifest } from "./package-json.js";
+
+// Re-export public API for PR mode and monorepos (Phase 4)
+export { diffDependencies } from "./changed-deps.js";
+export { GitError, createGitRunner, readFileAtCommit, resolveBaseCommit } from "./git.js";
+export type { GitRunResult, GitRunner } from "./git.js";
+export { WorkspaceError, discoverWorkspaces, expandWorkspacePatterns } from "./workspaces.js";
+export type { WorkspaceDir } from "./workspaces.js";
 export type {
   EnrichedDependency,
   EnrichmentOptions,

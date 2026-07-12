@@ -7,6 +7,7 @@
 
 import { DEFAULT_POLICY, evaluatePolicy } from "../policy.js";
 import type { Policy } from "../policy.js";
+import { locateFindings } from "../report.js";
 import type { Report } from "../report.js";
 import type { EnrichmentWarning } from "../types.js";
 import { ENRICHED_FIXTURES, FIXTURE_PACKAGE_NAMES } from "./fixture-packages.js";
@@ -81,7 +82,7 @@ export const MATRIX_WARNINGS: readonly EnrichmentWarning[] = [
  */
 export function matrixReport(policy: Policy): Report {
   return {
-    findings: evaluatePolicy(MATRIX_DEPENDENCIES, policy, { now: MATRIX_NOW }),
+    findings: locateFindings(evaluatePolicy(MATRIX_DEPENDENCIES, policy, { now: MATRIX_NOW }), "package.json"),
     warnings: MATRIX_WARNINGS,
     checkedCount: MATRIX_DEPENDENCIES.length,
   };

@@ -4,9 +4,17 @@ import { Ajv } from "ajv";
 import type { ValidateFunction } from "ajv";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { DEFAULT_POLICY } from "./policy.js";
+import { DEFAULT_POLICY, evaluatePolicy } from "./policy.js";
 import { renderSarif } from "./report-sarif.js";
-import { LENIENT_WITH_ALLOWLIST, MATRIX_POLICIES, matrixReport } from "./testing/policy-matrix.js";
+import { locateFindings } from "./report.js";
+import {
+  LENIENT_WITH_ALLOWLIST,
+  MATRIX_DEPENDENCIES,
+  MATRIX_NOW,
+  MATRIX_POLICIES,
+  STRICT_ALL_DEPS,
+  matrixReport,
+} from "./testing/policy-matrix.js";
 
 /**
  * The OASIS SARIF 2.1.0 schema (draft-07), vendored from
@@ -31,7 +39,8 @@ const LINES: Readonly<Record<string, number>> = {
   "react-native-htmltext": 12,
   "react-native-markdown": 13,
 };
-const lineOf = (name: string): number | null => LINES[name] ?? null;
+const lineOf = (file: string, name: string): number | null =>
+  file === "package.json" ? (LINES[name] ?? null) : null;
 
 interface SarifResult {
   ruleId: string;
@@ -139,6 +148,33 @@ describe("renderSarif — content mapping", () => {
     for (const result of results.filter((r) => !r.message.text.includes("react-native-markdown"))) {
       expect(result.suppressions).toBeUndefined();
     }
+  });
+
+  it("locates workspace findings in their own manifest", () => {
+    const report = {
+      findings: [
+        ...locateFindings(
+          // request (deprecated) is not RN-native, so use the all-deps policy.
+          evaluatePolicy(MATRIX_DEPENDENCIES.slice(1, 2), STRICT_ALL_DEPS, { now: MATRIX_NOW }),
+          "packages/a/package.json",
+        ),
+      ],
+      warnings: [],
+      checkedCount: 1,
+      manifestCount: 2,
+    };
+    const workspaceLineOf = (file: string): number | null =>
+      file === "packages/a/package.json" ? 4 : null;
+    const doc = JSON.parse(renderSarif(report, { lineOf: workspaceLineOf })) as SarifLog;
+    const results = doc.runs[0]?.results ?? [];
+    expect(results.length).toBeGreaterThan(0);
+    for (const result of results) {
+      expect(result.locations[0]?.physicalLocation.artifactLocation.uri).toBe(
+        "packages/a/package.json",
+      );
+      expect(result.locations[0]?.physicalLocation.region?.startLine).toBe(4);
+    }
+    expect(validate(doc)).toBe(true);
   });
 
   it("carries enrichment warnings as tool execution notifications", () => {

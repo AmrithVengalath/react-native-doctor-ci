@@ -23,6 +23,16 @@ export class ManifestError extends Error {
 }
 
 /**
+ * One dependency declaration from a `dependencies` section: the package name
+ * and its raw version spec string, exactly as authored.
+ */
+export interface DependencyEntry {
+  readonly name: string;
+  /** The raw spec (`"^1.2.0"`, `"npm:foo@2"`, …) — never parsed as semver. */
+  readonly spec: string;
+}
+
+/**
  * A loaded package.json: the raw text (for line resolution) and the
  * dependency names to check, in the order they are authored.
  */
@@ -33,6 +43,37 @@ export interface ProjectManifest {
   readonly text: string;
   /** Names from the `dependencies` section, in authored order. */
   readonly dependencies: readonly string[];
+  /** Name/spec pairs from the `dependencies` section, in authored order. */
+  readonly entries: readonly DependencyEntry[];
+}
+
+/**
+ * Extract name/spec pairs from the `dependencies` section of a parsed
+ * package.json value, preserving authored order. Returns an empty list when
+ * the section is absent; throws {@link ManifestError} when the section or a
+ * spec value has the wrong shape.
+ *
+ * @param parsed - The JSON-parsed manifest.
+ * @param where - Human-readable location used in error messages.
+ */
+export function listDependencyEntries(
+  parsed: unknown,
+  where = "package.json",
+): readonly DependencyEntry[] {
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    throw new ManifestError(`${where} is not a JSON object.`);
+  }
+  const deps: unknown = (parsed as Record<string, unknown>)["dependencies"];
+  if (deps === undefined) return [];
+  if (typeof deps !== "object" || deps === null || Array.isArray(deps)) {
+    throw new ManifestError(`${where} has a "dependencies" field that is not an object.`);
+  }
+  return Object.entries(deps).map(([name, spec]) => {
+    if (typeof spec !== "string") {
+      throw new ManifestError(`${where} has a non-string version for dependency "${name}".`);
+    }
+    return { name, spec };
+  });
 }
 
 /**
@@ -44,28 +85,45 @@ export interface ProjectManifest {
  * @param where - Human-readable location used in error messages.
  */
 export function listDependencies(parsed: unknown, where = "package.json"): readonly string[] {
-  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-    throw new ManifestError(`${where} is not a JSON object.`);
-  }
-  const deps: unknown = (parsed as Record<string, unknown>)["dependencies"];
-  if (deps === undefined) return [];
-  if (typeof deps !== "object" || deps === null || Array.isArray(deps)) {
-    throw new ManifestError(`${where} has a "dependencies" field that is not an object.`);
-  }
-  return Object.keys(deps);
+  return listDependencyEntries(parsed, where).map((entry) => entry.name);
 }
 
 /**
- * Read and parse `<cwd>/package.json`.
+ * Parse raw manifest text (e.g. a blob read from git) into dependency
+ * entries. BOM-tolerant like {@link readPackageJson}.
  *
- * @param cwd - Directory containing the manifest.
- * @returns The manifest text and its dependency names.
+ * @param text - The raw manifest text.
+ * @param where - Human-readable location used in error messages.
+ * @throws ManifestError when the text is not valid JSON or has a malformed
+ * `dependencies` section.
+ */
+export function entriesFromManifestText(text: string, where: string): readonly DependencyEntry[] {
+  const stripped = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(stripped) as unknown;
+  } catch (err) {
+    throw new ManifestError(
+      `${where} is not valid JSON — ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  return listDependencyEntries(parsed, where);
+}
+
+/**
+ * Read and parse the manifest at an exact path.
+ *
+ * @param path - Absolute path of the package.json to read.
+ * @param missingMessage - Error message when the file does not exist; defaults
+ * to a plain "not found" pointing at `path`.
+ * @returns The manifest text and its dependency entries.
  * @throws ManifestError when the file is missing or not valid JSON — the CLI
  * turns this into exit code 2 with the message shown as-is.
  */
-export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
-  const path = join(cwd, "package.json");
-
+export async function readManifestAt(
+  path: string,
+  missingMessage?: string,
+): Promise<ProjectManifest> {
   let text: string;
   try {
     text = await readFile(path, "utf8");
@@ -75,10 +133,7 @@ export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     if (code === "ENOENT") {
-      throw new ManifestError(
-        `No package.json found in ${cwd}. Run rn-doctor from the project root ` +
-          `(the directory containing package.json).`,
-      );
+      throw new ManifestError(missingMessage ?? `No package.json found at ${path}.`);
     }
     throw new ManifestError(
       `Could not read ${path} — ${err instanceof Error ? err.message : String(err)}`,
@@ -94,7 +149,24 @@ export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
     );
   }
 
-  return { path, text, dependencies: listDependencies(parsed, path) };
+  const entries = listDependencyEntries(parsed, path);
+  return { path, text, dependencies: entries.map((entry) => entry.name), entries };
+}
+
+/**
+ * Read and parse `<cwd>/package.json`.
+ *
+ * @param cwd - Directory containing the manifest.
+ * @returns The manifest text and its dependency names.
+ * @throws ManifestError when the file is missing or not valid JSON — the CLI
+ * turns this into exit code 2 with the message shown as-is.
+ */
+export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
+  return readManifestAt(
+    join(cwd, "package.json"),
+    `No package.json found in ${cwd}. Run rn-doctor from the project root ` +
+      `(the directory containing package.json).`,
+  );
 }
 
 /**

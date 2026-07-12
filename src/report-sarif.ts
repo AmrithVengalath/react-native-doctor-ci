@@ -43,11 +43,12 @@ function sarifLevel(severity: Finding["severity"]): "error" | "warning" | "note"
  */
 export interface SarifOptions {
   /**
-   * Resolve a package's 1-based line in package.json, or `null` when unknown.
-   * When omitted (or when it returns `null`), results still carry the
-   * package.json artifact location, just without a region.
+   * Resolve a package's 1-based declaration line in the manifest at `file`
+   * (the finding's cwd-relative manifest path), or `null` when unknown. When
+   * omitted (or when it returns `null`), results still carry the manifest
+   * artifact location, just without a region.
    */
-  readonly lineOf?: (packageName: string) => number | null;
+  readonly lineOf?: (file: string, packageName: string) => number | null;
 }
 
 /**
@@ -69,7 +70,7 @@ export function renderSarif(report: Report, options: SarifOptions = {}): string 
   const summary = summarize(report.findings);
 
   const results = report.findings.map((f) => {
-    const line = lineOf(f.package);
+    const line = lineOf(f.file, f.package);
     return {
       ruleId: f.rule,
       ruleIndex: RULE_IDS.indexOf(f.rule),
@@ -78,7 +79,7 @@ export function renderSarif(report: Report, options: SarifOptions = {}): string 
       locations: [
         {
           physicalLocation: {
-            artifactLocation: { uri: "package.json" },
+            artifactLocation: { uri: f.file },
             ...(line !== null ? { region: { startLine: line } } : {}),
           },
         },

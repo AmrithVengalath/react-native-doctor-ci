@@ -8,15 +8,47 @@ import type { Finding } from "./policy.js";
 import type { EnrichmentWarning } from "./types.js";
 
 /**
+ * A policy finding located in a specific manifest file. The CLI decorates
+ * pure policy findings with their manifest path at report-assembly time; the
+ * policy engine itself stays manifest-blind.
+ */
+export interface ReportFinding extends Finding {
+  /**
+   * Manifest path relative to the run cwd, POSIX separators — `package.json`
+   * for single-manifest runs, e.g. `packages/a/package.json` under
+   * `--workspaces`.
+   */
+  readonly file: string;
+}
+
+/**
  * Everything a reporter needs to render one rn-doctor run.
  */
 export interface Report {
-  /** Findings from the policy engine, in its stable output order. */
-  readonly findings: readonly Finding[];
+  /** Findings from the policy engine, grouped by manifest in its stable output order. */
+  readonly findings: readonly ReportFinding[];
   /** Run-level and per-dependency enrichment warnings (degraded data, etc.). */
   readonly warnings: readonly EnrichmentWarning[];
-  /** How many dependencies were checked (after scope filtering happens in policy, this is the full input count). */
+  /** How many (manifest, dependency) pairs were checked across all scanned manifests. */
   readonly checkedCount: number;
+  /**
+   * How many manifests were scanned. Omitted (equivalent to 1) outside
+   * `--workspaces`; the pretty reporter mentions it only when above 1.
+   */
+  readonly manifestCount?: number;
+}
+
+/**
+ * Decorate pure policy findings with the manifest they belong to.
+ *
+ * @param findings - Findings from {@link evaluatePolicy}.
+ * @param file - Manifest path relative to the run cwd, POSIX separators.
+ */
+export function locateFindings(
+  findings: readonly Finding[],
+  file: string,
+): readonly ReportFinding[] {
+  return findings.map((f) => ({ ...f, file }));
 }
 
 /**

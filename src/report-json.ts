@@ -15,7 +15,8 @@ import type { Report } from "./report.js";
  * field), and the document contains no timestamps or environment-dependent
  * values, so identical inputs always serialize identically. The `version`
  * field is the document format version, bumped only on breaking shape
- * changes.
+ * changes — additive fields (like `file`, added for `--workspaces`) do not
+ * bump it.
  *
  * @param report - The report to render.
  * @returns Pretty-printed JSON, terminated with a newline.
@@ -33,6 +34,7 @@ export function renderJson(report: Report): string {
       suppressed: summary.suppressed,
     },
     findings: report.findings.map((f) => ({
+      file: f.file,
       package: f.package,
       rule: f.rule,
       severity: f.severity,

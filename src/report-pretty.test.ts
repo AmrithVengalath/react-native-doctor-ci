@@ -42,6 +42,33 @@ describe("renderPretty — human-readable output", () => {
     expect(text).toContain("[npm] left-pad: npm search returned no publish date");
   });
 
+  it("groups findings by manifest and counts manifests in a --workspaces run", () => {
+    const strict = matrixReport(STRICT_ALL_DEPS);
+    const [first, ...rest] = strict.findings;
+    if (first === undefined) throw new Error("matrix produced no findings");
+    const report = {
+      findings: [
+        { ...first, file: "packages/a/package.json" },
+        ...rest.map((f) => ({ ...f, file: "packages/b/package.json" })),
+      ],
+      warnings: [],
+      checkedCount: strict.checkedCount * 2,
+      manifestCount: 3,
+    };
+    const text = renderPretty(report, { color: false });
+    expect(text).toContain("packages/a/package.json:\n");
+    expect(text).toContain("packages/b/package.json:\n");
+    expect(text).toContain("in 3 manifests.");
+    // Each group header appears exactly once.
+    expect(text.split("packages/b/package.json:\n")).toHaveLength(2);
+  });
+
+  it("keeps single-manifest output free of group headers", () => {
+    const text = renderPretty(matrixReport(STRICT_ALL_DEPS), { color: false });
+    expect(text).not.toContain("package.json:");
+    expect(text).not.toContain("manifests");
+  });
+
   it("emits ANSI codes only when color is on, with identical content", () => {
     const plain = renderPretty(matrixReport(DEFAULT_POLICY), { color: false });
     const colored = renderPretty(matrixReport(DEFAULT_POLICY), { color: true });

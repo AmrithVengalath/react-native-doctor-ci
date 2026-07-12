@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Finding } from "./policy.js";
 import { renderAnnotations } from "./report-annotations.js";
+import { locateFindings } from "./report.js";
 import type { Report } from "./report.js";
 import { LENIENT_WITH_ALLOWLIST, matrixReport } from "./testing/policy-matrix.js";
 
@@ -18,7 +19,11 @@ function finding(overrides: Partial<Finding>): Finding {
 }
 
 function reportOf(findings: Finding[]): Report {
-  return { findings, warnings: [], checkedCount: findings.length };
+  return {
+    findings: locateFindings(findings, "package.json"),
+    warnings: [],
+    checkedCount: findings.length,
+  };
 }
 
 const noLine = (): number | null => null;
@@ -72,6 +77,24 @@ describe("renderAnnotations — GitHub workflow commands", () => {
     const report = reportOf([finding({ package: "weird:pkg,name" })]);
     const text = renderAnnotations(report, noLine);
     expect(text).toContain("title=rn-doctor%3A npmDeprecated (weird%3Apkg%2Cname)");
+  });
+
+  it("targets each finding's own manifest in a --workspaces run", () => {
+    const report: Report = {
+      findings: [
+        { ...finding({ message: "bad dep" }), file: "packages/a/package.json" },
+        { ...finding({ package: "other-pkg", message: "also bad" }), file: "packages/b/package.json" },
+      ],
+      warnings: [],
+      checkedCount: 2,
+      manifestCount: 3,
+    };
+    const lineOf = (file: string): number | null => (file === "packages/a/package.json" ? 12 : null);
+    const lines = renderAnnotations(report, lineOf).trimEnd().split("\n");
+    expect(lines[0]).toBe(
+      "::error file=packages/a/package.json,line=12,title=rn-doctor%3A npmDeprecated (example-pkg)::bad dep",
+    );
+    expect(lines[1]).toContain("file=packages/b/package.json,title=");
   });
 
   it("returns an empty string when there are no findings", () => {

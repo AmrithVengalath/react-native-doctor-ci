@@ -51,6 +51,11 @@ function plural(n: number, word: string): string {
 /**
  * Render the report for human eyes.
  *
+ * @remarks
+ * When the findings span more than one manifest (a `--workspaces` run), each
+ * group is introduced by its manifest path; single-manifest output is
+ * unchanged.
+ *
  * @param report - The report to render.
  * @param options - Color toggling; content is identical either way.
  * @returns The full report text, terminated with a newline.
@@ -59,7 +64,15 @@ export function renderPretty(report: Report, options: PrettyOptions): string {
   const { color } = options;
   const lines: string[] = [];
 
+  const multiManifest = (report.manifestCount ?? 1) > 1;
+  let currentFile: string | null = null;
+
   for (const f of report.findings) {
+    if (multiManifest && f.file !== currentFile) {
+      currentFile = f.file;
+      lines.push(paint(ANSI.dim, `${f.file}:`, color));
+      lines.push("");
+    }
     lines.push(`${badge(f, color)}  ${paint(ANSI.bold, f.package, color)}  [${f.rule}]`);
     lines.push(`    ${f.message}`);
     if (f.suppressedBy !== null) {
@@ -84,7 +97,9 @@ export function renderPretty(report: Report, options: PrettyOptions): string {
 
   const s = summarize(report.findings);
   const n = report.checkedCount;
-  const checked = `${String(n)} ${n === 1 ? "dependency" : "dependencies"}`;
+  const checked =
+    `${String(n)} ${n === 1 ? "dependency" : "dependencies"}` +
+    (multiManifest ? ` in ${String(report.manifestCount)} manifests` : "");
   if (s.errors === 0 && s.warnings === 0 && s.notes === 0 && s.suppressed === 0) {
     lines.push(paint(ANSI.green, `No findings across ${checked}.`, color));
   } else {
