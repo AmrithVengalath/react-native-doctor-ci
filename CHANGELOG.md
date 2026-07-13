@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.1...v0.1.2) (2026-07-13)
+
+### Bug Fixes
+
+* **action:** keep expressions out of input descriptions ([d5786b1](https://github.com/AmrithVengalath/react-native-doctor-ci/commit/d5786b16694f43594407a698e90faa751be3c327))
+
 ## [0.1.1](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.0...v0.1.1) (2026-07-13)
 
 ### Bug Fixes
