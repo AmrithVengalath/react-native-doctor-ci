@@ -11,6 +11,8 @@
     // This keeps the dts build working until that pipeline drops it.
     "ignoreDeprecations": "6.0",
 
+    "resolveJsonModule": true,
+
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,

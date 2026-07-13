@@ -3,6 +3,8 @@
  * @packageDocumentation
  */
 
+import { VERSION } from "./version.js";
+
 export interface FetchOptions {
   readonly headers?: Record<string, string>;
   readonly timeout?: number;
@@ -31,7 +33,7 @@ export async function fetchJson<T>(
   try {
     const response = await fetch(url, {
       headers: {
-        "user-agent": "rn-doctor/0.0.0",
+        "user-agent": `rn-doctor/${VERSION}`,
         ...options.headers,
       },
       signal: controller.signal,
