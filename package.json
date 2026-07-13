@@ -1,6 +1,6 @@
 {
   "name": "react-native-doctor-ci",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Policy-as-code CI gate for React Native dependency health: fail PRs that add abandoned, non-New-Architecture, or npm-deprecated dependencies.",
   "keywords": [
     "react-native",
