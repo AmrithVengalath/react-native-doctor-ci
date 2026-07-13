@@ -20,7 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22, 24]
+        # pnpm 11 needs Node >= 22.13, so the full toolchain gate runs on
+        # 22/24; Node 20 runtime support is covered by the node20-smoke job.
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
 
@@ -50,3 +52,37 @@ jobs:
 
       - name: Publish dry run
         run: pnpm publish --dry-run --no-git-checks
+
+      - name: Upload dist for the Node 20 smoke test
+        if: matrix.node == 22
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  node20-smoke:
+    # engines.node is >= 20: the dev toolchain can't run there (pnpm 11
+    # requires >= 22.13), but the built CLI must. Run it for real.
+    name: Node 20 smoke (built CLI)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download dist
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+
+      - name: Run the built CLI on Node 20
+        run: |
+          node --version
+          node dist/cli.js --version
+          node dist/cli.js --help
+          mkdir smoke && cd smoke
+          printf '{"name":"smoke","private":true,"dependencies":{}}' > package.json
+          node ../dist/cli.js
