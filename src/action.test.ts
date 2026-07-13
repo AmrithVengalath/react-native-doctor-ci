@@ -62,6 +62,14 @@ describe("action/action.yml", () => {
     expect(runStep.run).not.toMatch(/\$\{\{/);
   });
 
+  it("keeps expressions out of input descriptions (runner evaluates them)", () => {
+    // GitHub evaluates ${{ }} in action metadata descriptions; contexts
+    // like `github` are not available there and make the action unloadable.
+    for (const [name, input] of Object.entries(action.inputs)) {
+      expect(input.description ?? "", `input "${name}" description`).not.toMatch(/\$\{\{/);
+    }
+  });
+
   it("only emits flags the CLI actually parses", async () => {
     const cliSource = await read("src/cli-main.ts");
     const knownFlags = new Set(

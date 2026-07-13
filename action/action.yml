@@ -30,8 +30,9 @@ inputs:
     default: "false"
   base:
     description: >-
-      Base ref for changed-only, e.g. origin/${{ github.base_ref }}.
-      Only valid with changed-only: "true". Defaults to origin/main.
+      Base ref for changed-only; in a pull request workflow pass the
+      expression "origin/" + github.base_ref. Only valid with
+      changed-only: "true". Defaults to origin/main.
     required: false
     default: ""
   workspaces:
