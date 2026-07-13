@@ -14,6 +14,12 @@
   ],
   "license": "MIT",
   "author": "Amrith Vengalath",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AmrithVengalath/react-native-doctor-ci.git"
+  },
+  "homepage": "https://github.com/AmrithVengalath/react-native-doctor-ci#readme",
+  "bugs": "https://github.com/AmrithVengalath/react-native-doctor-ci/issues",
   "type": "module",
   "bin": {
     "rn-doctor": "./dist/cli.js"
