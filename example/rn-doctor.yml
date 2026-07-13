@@ -1,0 +1,29 @@
+# Copy this file to .github/workflows/rn-doctor.yml in your app repo.
+#
+# On every pull request it checks only the dependencies the PR adds or
+# changes, and fails with inline annotations on package.json when one of
+# them is abandoned, npm-deprecated, or does not support the New
+# Architecture. Tune the rules in .rn-doctor.yml (see the example next to
+# this file).
+name: Dependency health
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  rn-doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Required for changed-only: rn-doctor diffs against the
+          # merge-base of the PR branch and the base branch.
+          fetch-depth: 0
+
+      - uses: AmrithVengalath/react-native-doctor-ci/action@v0.1.0
+        with:
+          changed-only: "true"
+          base: origin/${{ github.base_ref }}

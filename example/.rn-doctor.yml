@@ -1,0 +1,51 @@
+# Example .rn-doctor.yml — the rn-doctor policy file.
+#
+# Put this at the root of your repo (next to package.json). Every key is
+# optional; anything you leave out falls back to the built-in default shown
+# here. Unknown keys are rejected, so typos fail loudly instead of silently
+# weakening the policy.
+
+rules:
+  # How to treat a dependency the React Native Directory marks as NOT
+  # supporting the New Architecture. error | warn | off
+  newArchitecture: error
+
+  # How to treat a dependency whose New Architecture support is unknown
+  # (not in the directory, no codegenConfig). Missing data is a warning by
+  # default — honest, not alarmist. error | warn | off
+  newArchUnknown: warn
+
+  # Staleness thresholds on the latest npm publish, in months.
+  # Older than warnMonths -> warn; older than errorMonths -> error.
+  # Set to the string "off" to disable.
+  lastPublish:
+    warnMonths: 12
+    errorMonths: 24
+
+  # The package's GitHub repository is archived. error | warn | off
+  githubArchived: error
+
+  # The latest version is marked deprecated on npm. error | warn | off
+  npmDeprecated: error
+
+  # The React Native Directory flags the package as unmaintained.
+  # error | warn | off
+  directoryUnmaintained: warn
+
+# Which dependencies to check:
+#   rn-native-only  - only packages with native code / RN coupling
+#                     (listed in the RN Directory, peer-depend on
+#                     react-native, or ship android/ios directories)
+#   all-deps        - everything under "dependencies"
+scope: rn-native-only
+
+# Allowlist: keep a finding from failing the build without deleting the
+# rule. Each entry suppresses findings for one package. Suppressed findings
+# still show up in reports (marked allowed) so nothing disappears silently.
+allow:
+  - package: react-native-legacy-thing
+    reason: "Replacement planned for Q4; tracked in TICKET-123"
+    # Optional expiry (YYYY-MM-DD). After this date the allow no longer
+    # suppresses anything — findings escalate to errors so stale exceptions
+    # cannot outlive their justification.
+    expires: 2027-01-31

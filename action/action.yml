@@ -1,0 +1,99 @@
+name: React Native Doctor CI
+description: >-
+  Fail pull requests that add abandoned, non-New-Architecture, or
+  npm-deprecated React Native dependencies. Inline annotations and a
+  policy-as-code allowlist via .rn-doctor.yml.
+author: Amrith Vengalath
+branding:
+  icon: activity
+  color: red
+
+inputs:
+  version:
+    description: >-
+      react-native-doctor-ci version or dist-tag to run. Pin an exact
+      version for reproducible CI runs.
+    required: false
+    default: latest
+  policy:
+    description: >-
+      Path to the policy file, relative to working-directory. When empty,
+      rn-doctor uses .rn-doctor.yml if present, else the built-in defaults.
+    required: false
+    default: ""
+  changed-only:
+    description: >-
+      Check only dependencies added or changed vs the base ref
+      ("true"/"false"). Requires actions/checkout with fetch-depth: 0 so the
+      merge-base is available.
+    required: false
+    default: "false"
+  base:
+    description: >-
+      Base ref for changed-only, e.g. origin/${{ github.base_ref }}.
+      Only valid with changed-only: "true". Defaults to origin/main.
+    required: false
+    default: ""
+  workspaces:
+    description: Also check every workspace package.json ("true"/"false").
+    required: false
+    default: "false"
+  annotations:
+    description: Emit inline GitHub annotations ("true"/"false").
+    required: false
+    default: "true"
+  token:
+    description: >-
+      GitHub token used to enrich repository data (archived state, last
+      push). Defaults to the workflow token.
+    required: false
+    default: ${{ github.token }}
+  working-directory:
+    description: Directory containing the package.json to check.
+    required: false
+    default: "."
+  node-version:
+    description: Node.js version to set up (rn-doctor requires Node >= 20).
+    required: false
+    default: "22"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run rn-doctor
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      # Inputs flow through env, never interpolated into the script, so a
+      # crafted input value can never become shell code.
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        RN_DOCTOR_VERSION: ${{ inputs.version }}
+        RN_DOCTOR_POLICY: ${{ inputs.policy }}
+        RN_DOCTOR_CHANGED_ONLY: ${{ inputs.changed-only }}
+        RN_DOCTOR_BASE: ${{ inputs.base }}
+        RN_DOCTOR_WORKSPACES: ${{ inputs.workspaces }}
+        RN_DOCTOR_ANNOTATIONS: ${{ inputs.annotations }}
+      run: |
+        args=()
+        if [ -n "$RN_DOCTOR_POLICY" ]; then
+          args+=(--policy "$RN_DOCTOR_POLICY")
+        fi
+        if [ "$RN_DOCTOR_CHANGED_ONLY" = "true" ]; then
+          args+=(--changed-only)
+        fi
+        if [ -n "$RN_DOCTOR_BASE" ]; then
+          args+=(--base "$RN_DOCTOR_BASE")
+        fi
+        if [ "$RN_DOCTOR_WORKSPACES" = "true" ]; then
+          args+=(--workspaces)
+        fi
+        if [ "$RN_DOCTOR_ANNOTATIONS" = "false" ]; then
+          args+=(--no-annotations)
+        fi
+        # The bin (rn-doctor) is not the package name, so npx needs --package.
+        npx --yes --package "react-native-doctor-ci@$RN_DOCTOR_VERSION" rn-doctor "${args[@]}"
