@@ -24,13 +24,13 @@ jobs:
         # 22/24; Node 20 runtime support is covered by the node20-smoke job.
         node: [22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Set up Node ${{ matrix.node }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -53,36 +53,41 @@ jobs:
       - name: Publish dry run
         run: pnpm publish --dry-run --no-git-checks
 
-      - name: Upload dist for the Node 20 smoke test
+      - name: Pack tarball for the Node 20 smoke test
+        if: matrix.node == 22
+        run: pnpm pack --out rn-doctor.tgz
+
+      - name: Upload tarball for the Node 20 smoke test
         if: matrix.node == 22
         uses: actions/upload-artifact@v7
         with:
-          name: dist
-          path: dist/
+          name: tarball
+          path: rn-doctor.tgz
 
   node20-smoke:
     # engines.node is >= 20: the dev toolchain can't run there (pnpm 11
-    # requires >= 22.13), but the built CLI must. Run it for real.
-    name: Node 20 smoke (built CLI)
+    # requires >= 22.13), but the shipped package must. Install the real
+    # tarball with Node 20's npm and run the CLI, exactly like a consumer.
+    name: Node 20 smoke (packed CLI)
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Set up Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
 
-      - name: Download dist
+      - name: Download tarball
         uses: actions/download-artifact@v8
         with:
-          name: dist
-          path: dist
+          name: tarball
 
-      - name: Run the built CLI on Node 20
+      - name: Install and run the packed CLI on Node 20
         run: |
           node --version
-          node dist/cli.js --version
-          node dist/cli.js --help
           mkdir smoke && cd smoke
           printf '{"name":"smoke","private":true,"dependencies":{}}' > package.json
-          node ../dist/cli.js
+          npm install --no-save ../rn-doctor.tgz
+          ./node_modules/.bin/rn-doctor --version
+          ./node_modules/.bin/rn-doctor --help
+          ./node_modules/.bin/rn-doctor
