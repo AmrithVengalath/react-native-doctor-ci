@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.0...v0.1.1) (2026-07-13)
+
+### Bug Fixes
+
+* report the real package version from the CLI and user-agent ([8464f70](https://github.com/AmrithVengalath/react-native-doctor-ci/commit/8464f70e2d2f48a83f26e3a056befa13a17bc85e))
+
 ## 0.1.0 (2026-07-13)
 
 ### Features
