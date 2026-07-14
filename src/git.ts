@@ -32,7 +32,7 @@ export interface GitRunResult {
 
 /**
  * Injectable git process runner. Resolves with the exit code rather than
- * rejecting on nonzero exit — callers classify failures themselves. Throws
+ * rejecting on nonzero exit - callers classify failures themselves. Throws
  * {@link GitError} only when git cannot be spawned at all.
  */
 export type GitRunner = (args: readonly string[], cwd: string) => Promise<GitRunResult>;
@@ -51,7 +51,7 @@ export function createGitRunner(): GitRunner {
         (err, stdout, stderr) => {
           if (err && (err as NodeJS.ErrnoException).code === "ENOENT") {
             reject(
-              new GitError("git executable not found on PATH — --changed-only requires git."),
+              new GitError("git executable not found on PATH - --changed-only requires git."),
             );
             return;
           }
@@ -106,11 +106,11 @@ export async function resolveBaseCommit(
   if (stderr.trim() === "") {
     // merge-base exits 1 with empty output when there is no common ancestor.
     throw new GitError(
-      `no merge base between HEAD and "${baseRef}" — histories are unrelated or the ` +
+      `no merge base between HEAD and "${baseRef}" - histories are unrelated or the ` +
         `clone is too shallow. In GitHub Actions, check out with fetch-depth: 0.`,
     );
   }
-  throw new GitError(`git merge-base HEAD ${baseRef} failed — ${stderr.trim()}`);
+  throw new GitError(`git merge-base HEAD ${baseRef} failed - ${stderr.trim()}`);
 }
 
 /**
@@ -147,5 +147,5 @@ export async function readFileAtCommit(
   if (/does not exist in|exists on disk, but not in|but not in the working tree|path .* does not exist/i.test(result.stderr)) {
     return null;
   }
-  throw new GitError(`git show ${commit}:./${posixPath} failed — ${result.stderr.trim()}`);
+  throw new GitError(`git show ${commit}:./${posixPath} failed - ${result.stderr.trim()}`);
 }

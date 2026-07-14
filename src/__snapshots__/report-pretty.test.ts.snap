@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renderPretty — human-readable output > 8-fixture matrix under the default policy 1`] = `
+exports[`renderPretty - human-readable output > 8-fixture matrix under the default policy 1`] = `
 "error  react-native-htmltext  [githubArchived]
     The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }.
     evidence: https://github.com/siuying/react-native-htmltext
@@ -49,13 +49,13 @@ Data warnings (missing or degraded lookups - findings may be incomplete):
 "
 `;
 
-exports[`renderPretty — human-readable output > 8-fixture matrix under the lenient-with-allowlist policy 1`] = `
+exports[`renderPretty - human-readable output > 8-fixture matrix under the lenient-with-allowlist policy 1`] = `
 "error  react-native-htmltext  [githubArchived]
-    The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.
+    The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 - escalated to error. Renew the entry with a new expiry, or remove the dependency.
     evidence: https://github.com/siuying/react-native-htmltext
 
 error  react-native-htmltext  [directoryUnmaintained]
-    react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.
+    react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: "<why>", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext ("fork planned Q3 2025") expired on 2026-01-01 - escalated to error. Renew the entry with a new expiry, or remove the dependency.
     evidence: https://reactnative.directory/?search=react-native-htmltext
 
 allowed(warn)  react-native-markdown  [newArchitecture]
@@ -96,7 +96,7 @@ Data warnings (missing or degraded lookups - findings may be incomplete):
 "
 `;
 
-exports[`renderPretty — human-readable output > 8-fixture matrix under the strict-all-deps policy 1`] = `
+exports[`renderPretty - human-readable output > 8-fixture matrix under the strict-all-deps policy 1`] = `
 "error  request  [newArchUnknown]
     New Architecture support for request is unknown: it is not listed in the RN Directory and its npm package has no codegen hints. Verify support manually (check the repo README/releases). If this is intentional, allowlist it in .rn-doctor.yml: { package: request, reason: "<why>", expires: YYYY-MM-DD }.
     evidence: https://reactnative.directory/?search=request

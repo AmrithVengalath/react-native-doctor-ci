@@ -6,9 +6,9 @@ Thanks for your interest in contributing! This project is maintained by a solo m
 
 Please open an issue before starting work on anything non-trivial. It saves you from building something that can't be merged, and it lets us agree on the approach up front. Small fixes (typos, obvious bugs with a clear one-line fix) can go straight to a PR.
 
-The project follows a phased roadmap — features land in a deliberate order, so a good idea may be queued rather than merged immediately.
+The project follows a phased roadmap - features land in a deliberate order, so a good idea may be queued rather than merged immediately.
 
-## Out of scope — won't be accepted
+## Out of scope - won't be accepted
 
 To keep the tool focused and low-maintenance, PRs adding the following will be declined:
 
@@ -20,7 +20,7 @@ To keep the tool focused and low-maintenance, PRs adding the following will be d
 
 - **Title:** use [Conventional Commits](https://www.conventionalcommits.org/) scoped to this package, e.g. `fix(cli): resolve package.json line for scoped deps` or `feat(policy): support expires on allowlist entries`.
 - **One concern per PR.** Small, reviewable PRs get merged fast; grab-bag PRs stall.
-- **Fill in the PR template** — Problem / Solution / Testing / New Dependencies / Checklist. "New Dependencies" defaults to **None**; any new runtime dependency needs a stated justification (the project has a strong zero-dependency bias).
+- **Fill in the PR template** - Problem / Solution / Testing / New Dependencies / Checklist. "New Dependencies" defaults to **None**; any new runtime dependency needs a stated justification (the project has a strong zero-dependency bias).
 - **User-facing changes** must be reflected in the changelog: use a `fix:` / `feat:` (or `feat!:` for breaking) Conventional Commit title so the release notes pick the change up.
 - **Green locally before pushing:** typecheck, lint, tests, and build must all pass.
 
@@ -28,7 +28,7 @@ To keep the tool focused and low-maintenance, PRs adding the following will be d
 
 - TypeScript **strict** mode; no `any` in the public API.
 - All exported symbols documented with TSDoc.
-- Node >= 20; pure TypeScript — no native code.
+- Node >= 20; pure TypeScript - no native code.
 - Policy semantics target the React Native New Architecture era (`react-native >= 0.76`).
 - Error and finding messages must be actionable: say what to do, not just what's wrong, and include an evidence link where one exists.
 

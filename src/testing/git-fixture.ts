@@ -16,7 +16,7 @@ export function gitIn(cwd: string, ...args: string[]): string {
 /**
  * Initialize a hermetic git repository at `dir` with branch `main`.
  * Commits in fixture repos must never depend on the host machine's identity,
- * signing setup, or hooks — CI has none of them.
+ * signing setup, or hooks - CI has none of them.
  */
 export function initFixtureRepo(dir: string): void {
   gitIn(dir, "init", "-q", "-b", "main");

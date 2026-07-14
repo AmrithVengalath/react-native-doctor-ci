@@ -21,7 +21,7 @@ export const DEFAULT_POLICY_FILENAME = ".rn-doctor.yml";
 
 /**
  * A policy file could not be read or is invalid. Maps to exit code 2
- * (tool failure) in the CLI — a broken policy must never silently pass.
+ * (tool failure) in the CLI - a broken policy must never silently pass.
  */
 export class PolicyError extends Error {
   constructor(message: string) {
@@ -153,7 +153,7 @@ export function parsePolicy(yamlText: string, filePath?: string): Policy {
   try {
     raw = parse(yamlText);
   } catch (err) {
-    return fail(where, `YAML syntax error — ${err instanceof Error ? err.message : String(err)}`);
+    return fail(where, `YAML syntax error - ${err instanceof Error ? err.message : String(err)}`);
   }
 
   if (raw === null || raw === undefined) return DEFAULT_POLICY;
@@ -193,7 +193,7 @@ export function parsePolicy(yamlText: string, filePath?: string): Policy {
  * Load the effective policy from disk.
  *
  * @remarks
- * - With an explicit `path`: the file must exist — a missing file is a
+ * - With an explicit `path`: the file must exist - a missing file is a
  *   {@link PolicyError} (a CI run pointing at a typo'd path must not
  *   silently fall back to defaults).
  * - Without a `path`: looks for `.rn-doctor.yml` in `cwd`; if absent,

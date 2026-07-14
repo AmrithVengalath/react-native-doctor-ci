@@ -1,6 +1,6 @@
 <!--
   Title format: Conventional Commits, e.g. "fix(cli): ..." / "feat(policy): ..." / "docs: ...".
-  Please keep the headings below — fill each section in.
+  Please keep the headings below - fill each section in.
 -->
 
 ## Problem
@@ -19,7 +19,7 @@
 
 None
 
-<!-- If not "None": list each new dependency and justify it — this project has a strong zero-dependency bias. -->
+<!-- If not "None": list each new dependency and justify it - this project has a strong zero-dependency bias. -->
 
 ## Checklist
 

@@ -9,7 +9,7 @@ import {
   matrixReport,
 } from "./testing/policy-matrix.js";
 
-describe("renderPretty — human-readable output", () => {
+describe("renderPretty - human-readable output", () => {
   it.each(MATRIX_POLICIES)("8-fixture matrix under the %s policy", (_label, policy) => {
     expect(renderPretty(matrixReport(policy), { color: false })).toMatchSnapshot();
   });

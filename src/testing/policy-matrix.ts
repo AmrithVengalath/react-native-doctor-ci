@@ -22,7 +22,7 @@ export const MATRIX_DEPENDENCIES = Object.values(FIXTURE_PACKAGE_NAMES).map((nam
   return record;
 });
 
-/** Everything errors, all-deps scope — the harshest configuration. */
+/** Everything errors, all-deps scope - the harshest configuration. */
 export const STRICT_ALL_DEPS: Policy = {
   scope: "all-deps",
   rules: {

@@ -28,7 +28,7 @@ export class ManifestError extends Error {
  */
 export interface DependencyEntry {
   readonly name: string;
-  /** The raw spec (`"^1.2.0"`, `"npm:foo@2"`, …) — never parsed as semver. */
+  /** The raw spec (`"^1.2.0"`, `"npm:foo@2"`, …) - never parsed as semver. */
   readonly spec: string;
 }
 
@@ -104,7 +104,7 @@ export function entriesFromManifestText(text: string, where: string): readonly D
     parsed = JSON.parse(stripped) as unknown;
   } catch (err) {
     throw new ManifestError(
-      `${where} is not valid JSON — ${err instanceof Error ? err.message : String(err)}`,
+      `${where} is not valid JSON - ${err instanceof Error ? err.message : String(err)}`,
     );
   }
   return listDependencyEntries(parsed, where);
@@ -117,7 +117,7 @@ export function entriesFromManifestText(text: string, where: string): readonly D
  * @param missingMessage - Error message when the file does not exist; defaults
  * to a plain "not found" pointing at `path`.
  * @returns The manifest text and its dependency entries.
- * @throws ManifestError when the file is missing or not valid JSON — the CLI
+ * @throws ManifestError when the file is missing or not valid JSON - the CLI
  * turns this into exit code 2 with the message shown as-is.
  */
 export async function readManifestAt(
@@ -136,7 +136,7 @@ export async function readManifestAt(
       throw new ManifestError(missingMessage ?? `No package.json found at ${path}.`);
     }
     throw new ManifestError(
-      `Could not read ${path} — ${err instanceof Error ? err.message : String(err)}`,
+      `Could not read ${path} - ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -145,7 +145,7 @@ export async function readManifestAt(
     parsed = JSON.parse(text) as unknown;
   } catch (err) {
     throw new ManifestError(
-      `${path} is not valid JSON — ${err instanceof Error ? err.message : String(err)}`,
+      `${path} is not valid JSON - ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 
@@ -158,7 +158,7 @@ export async function readManifestAt(
  *
  * @param cwd - Directory containing the manifest.
  * @returns The manifest text and its dependency names.
- * @throws ManifestError when the file is missing or not valid JSON — the CLI
+ * @throws ManifestError when the file is missing or not valid JSON - the CLI
  * turns this into exit code 2 with the message shown as-is.
  */
 export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
@@ -177,9 +177,9 @@ export async function readPackageJson(cwd: string): Promise<ProjectManifest> {
  * Scans the raw text with a minimal JSON walker (string- and escape-aware,
  * tracking object depth), so a key with the same name under `devDependencies`,
  * `scripts`, or a nested object can never false-match. Returns `null` when the
- * name is not declared in `dependencies` — annotations then omit the line.
+ * name is not declared in `dependencies` - annotations then omit the line.
  *
- * @param text - The raw package.json text (not re-serialized — the real file).
+ * @param text - The raw package.json text (not re-serialized - the real file).
  * @param name - The exact dependency name to locate.
  */
 export function findDependencyLine(text: string, name: string): number | null {

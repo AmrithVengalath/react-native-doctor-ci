@@ -22,7 +22,7 @@ body:
     id: solution
     attributes:
       label: Proposed solution
-      description: How you'd like it to work — flags, policy file syntax, output, etc.
+      description: How you'd like it to work - flags, policy file syntax, output, etc.
     validations:
       required: true
   - type: textarea

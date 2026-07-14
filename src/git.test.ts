@@ -60,7 +60,7 @@ describe("resolveBaseCommit", () => {
   it("surfaces unclassified failures with the raw stderr", async () => {
     const { runner } = fakeGit({ code: 128, stderr: "fatal: something exotic" });
     await expect(resolveBaseCommit(runner, "/repo", "dev")).rejects.toThrow(
-      /git merge-base HEAD dev failed — fatal: something exotic/,
+      /git merge-base HEAD dev failed - fatal: something exotic/,
     );
   });
 });
@@ -90,7 +90,7 @@ describe("readFileAtCommit", () => {
   it("throws GitError for other failures", async () => {
     const { runner } = fakeGit({ code: 128, stderr: "fatal: bad object abc123" });
     await expect(readFileAtCommit(runner, "/repo", "abc123", "package.json")).rejects.toThrow(
-      /git show abc123:\.\/package\.json failed — fatal: bad object abc123/,
+      /git show abc123:\.\/package\.json failed - fatal: bad object abc123/,
     );
   });
 });

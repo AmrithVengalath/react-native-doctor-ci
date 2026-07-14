@@ -15,7 +15,7 @@ function finding(overrides: Partial<Finding>): Finding {
   };
 }
 
-describe("computeExitCode — exit-code contract", () => {
+describe("computeExitCode - exit-code contract", () => {
   it.each([
     ["an unsuppressed error", [finding({ severity: "error" })], 1],
     ["no findings", [], 0],

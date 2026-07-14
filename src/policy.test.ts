@@ -26,7 +26,7 @@ function makeEnriched(mutate?: (d: DeepWritable<EnrichedDependency>) => void): E
   return clone;
 }
 
-/** All rules disabled — the baseline for isolating a single rule per test. */
+/** All rules disabled - the baseline for isolating a single rule per test. */
 const ALL_OFF: PolicyRules = {
   newArchitecture: "off",
   newArchUnknown: "off",
@@ -40,7 +40,7 @@ function policyOf(rules: PolicyRules, extra?: Partial<Omit<Policy, "rules">>): P
   return { rules, scope: "rn-native-only", allow: [], ...extra };
 }
 
-describe("evaluatePolicy — every rule × every severity", () => {
+describe("evaluatePolicy - every rule × every severity", () => {
   interface SeverityRuleCase {
     readonly rule: string;
     readonly arrange: (d: DeepWritable<EnrichedDependency>) => void;
@@ -200,7 +200,7 @@ describe("evaluatePolicy — every rule × every severity", () => {
   });
 });
 
-describe("evaluatePolicy — scope", () => {
+describe("evaluatePolicy - scope", () => {
   // `request` is npm-deprecated but not an RN native module.
   const nonNative = fixture(FIXTURE_PACKAGE_NAMES.deprecated);
 
@@ -219,7 +219,7 @@ describe("evaluatePolicy — scope", () => {
   });
 });
 
-describe("evaluatePolicy — allowlist", () => {
+describe("evaluatePolicy - allowlist", () => {
   const archived = () =>
     makeEnriched((d) => {
       d.github.archived = { known: true, value: true, source: "github-api" };
@@ -295,7 +295,7 @@ describe("evaluatePolicy — allowlist", () => {
   });
 });
 
-describe("evaluatePolicy — 8-fixture matrix under 3 policies (snapshots)", () => {
+describe("evaluatePolicy - 8-fixture matrix under 3 policies (snapshots)", () => {
   const matrix = Object.values(FIXTURE_PACKAGE_NAMES).map((name) => fixture(name));
 
   const STRICT_ALL_DEPS: Policy = {

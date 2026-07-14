@@ -4,7 +4,7 @@
  * grouped run.
  *
  * Supports both workspace conventions:
- * - `pnpm-workspace.yaml` `packages:` globs (takes precedence — pnpm itself
+ * - `pnpm-workspace.yaml` `packages:` globs (takes precedence - pnpm itself
  *   ignores the package.json field), parsed with the existing `yaml` dep;
  * - root package.json `"workspaces"` (an array, or `{ packages: [...] }`).
  *
@@ -36,7 +36,7 @@ export interface WorkspaceDir {
   /** Absolute directory containing a package.json. */
   readonly dir: string;
   /**
-   * Manifest path relative to the root cwd, POSIX separators — e.g.
+   * Manifest path relative to the root cwd, POSIX separators - e.g.
    * `packages/a/package.json`. The root manifest is `package.json`.
    */
   readonly manifestRelPath: string;
@@ -128,7 +128,7 @@ function relPosix(rootDir: string, dir: string): string {
  *
  * @remarks Supported syntax: literal paths, `*` as a full or partial path
  * segment, and `**` (any depth). `node_modules` and dot-directories are never
- * traversed. Anything fancier (braces, extglobs) simply matches nothing —
+ * traversed. Anything fancier (braces, extglobs) simply matches nothing  - 
  * the CLI warns when a configuration yields zero workspaces.
  */
 export async function expandWorkspacePatterns(
@@ -176,7 +176,7 @@ async function readPnpmWorkspacePatterns(rootDir: string): Promise<readonly stri
     parsed = parse(text) as unknown;
   } catch (err) {
     throw new WorkspaceError(
-      `pnpm-workspace.yaml is not valid YAML — ${err instanceof Error ? err.message : String(err)}`,
+      `pnpm-workspace.yaml is not valid YAML - ${err instanceof Error ? err.message : String(err)}`,
     );
   }
   if (typeof parsed !== "object" || parsed === null) return null;
@@ -211,7 +211,7 @@ function readManifestWorkspacePatterns(parsed: unknown): readonly string[] | nul
  * @param rootDir - The workspace root (the CLI cwd).
  * @param rootManifestParsed - The JSON-parsed root package.json (already
  * loaded by the CLI), used for its `workspaces` field.
- * @returns Zero workspace matches yield just the root entry — the CLI warns
+ * @returns Zero workspace matches yield just the root entry - the CLI warns
  * but proceeds.
  * @throws WorkspaceError when neither `pnpm-workspace.yaml` `packages:` nor a
  * package.json `workspaces` field exists, or either is malformed.
@@ -233,7 +233,7 @@ export async function discoverWorkspaces(
     try {
       await stat(join(dir, "package.json"));
     } catch {
-      continue; // matched directory without a manifest — not a workspace
+      continue; // matched directory without a manifest - not a workspace
     }
     result.push({ dir, manifestRelPath: `${relPosix(rootDir, dir)}/package.json` });
   }

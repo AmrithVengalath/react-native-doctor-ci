@@ -1,5 +1,5 @@
 /**
- * react-native-doctor-ci — a policy-as-code CI gate for React Native dependency
+ * react-native-doctor-ci - a policy-as-code CI gate for React Native dependency
  * health. It fails pull requests that add abandoned, non-New-Architecture, or
  * npm-deprecated dependencies, with readable annotations and an allowlist
  * workflow.

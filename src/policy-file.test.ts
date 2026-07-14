@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_POLICY } from "./policy.js";
 import { DEFAULT_POLICY_FILENAME, PolicyError, loadPolicy, parsePolicy } from "./policy-file.js";
 
-/** The documented sample from the project plan — must parse exactly. */
+/** The documented sample from the project plan - must parse exactly. */
 const SPEC_SAMPLE = `
 rules:
   newArchitecture: error          # error | warn | off ; how to treat "unsupported"

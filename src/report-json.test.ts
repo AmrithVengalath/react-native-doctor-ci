@@ -4,7 +4,7 @@ import { DEFAULT_POLICY } from "./policy.js";
 import { renderJson } from "./report-json.js";
 import { LENIENT_WITH_ALLOWLIST, MATRIX_POLICIES, matrixReport } from "./testing/policy-matrix.js";
 
-describe("renderJson — stable-ordered machine output", () => {
+describe("renderJson - stable-ordered machine output", () => {
   it.each(MATRIX_POLICIES)("8-fixture matrix under the %s policy", (_label, policy) => {
     expect(renderJson(matrixReport(policy))).toMatchSnapshot();
   });

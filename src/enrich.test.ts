@@ -22,7 +22,7 @@ const RATE_LIMIT_WARNING = {
     "GitHub API rate-limited after checking dependencies; remaining packages fall back to cached GitHub data or unknown",
 };
 
-describe("enrichDependencies — 8-fixture acceptance matrix", () => {
+describe("enrichDependencies - 8-fixture acceptance matrix", () => {
   it.each(CATEGORIES)("enriches %s to deep-equal its recorded fixture", async (name) => {
     const result = await enrichDependencies([name], { noCache: true });
 
@@ -45,7 +45,7 @@ describe("enrichDependencies — 8-fixture acceptance matrix", () => {
   });
 });
 
-describe("enrichDependencies — GitHub rate-limit degradation", () => {
+describe("enrichDependencies - GitHub rate-limit degradation", () => {
   it("trips the breaker, warns at run level, and falls back to directory data", async () => {
     // Force every GitHub call to 403 so the circuit breaker trips on the first repo.
     server.use(

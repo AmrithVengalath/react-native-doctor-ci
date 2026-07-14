@@ -47,7 +47,7 @@ const directoryDetailFixtures: Record<string, unknown> = {
   [FIXTURE_PACKAGE_NAMES.newArchUnsupported]: dirNewArchUnsupported,
 };
 
-// Keyed by `${owner}/${repo}` — the identity the orchestrator actually derives from
+// Keyed by `${owner}/${repo}` - the identity the orchestrator actually derives from
 // npm/directory metadata. Any repo absent here 404s, which is exactly how the
 // directory-fallback fixtures (archived / stale / unmaintained) are meant to degrade.
 const githubApiByRepo: Record<string, unknown> = {

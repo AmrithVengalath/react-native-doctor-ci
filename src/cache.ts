@@ -27,7 +27,7 @@ const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 function isDegraded(entry: CacheEntry): boolean {
   // Only *transient* unknowns (a blip, a rate-limit) make an entry degraded. Durable
   // unknowns (no repo URL, not in the directory, a real 404) are the true answer and
-  // are safe to cache — re-fetching wouldn't change them.
+  // are safe to cache - re-fetching wouldn't change them.
   const transientReasons = new Set<UnknownReason>([
     "github-rate-limited",
     "github-error",
@@ -64,7 +64,7 @@ export async function readCacheFile(cacheDir: string): Promise<CacheFile> {
 
     return parsed;
   } catch {
-    // Missing file or parse error — return empty cache, never throw
+    // Missing file or parse error - return empty cache, never throw
     return { version: CACHE_VERSION, entries: {} };
   }
 }

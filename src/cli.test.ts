@@ -77,7 +77,7 @@ afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
-describe("runCli — flag handling (no network)", () => {
+describe("runCli - flag handling (no network)", () => {
   it("--version prints the version and exits 0", async () => {
     const { io, stdout } = makeIo(dir);
     expect(await runCli(["--version"], io)).toBe(0);
@@ -111,7 +111,7 @@ describe("runCli — flag handling (no network)", () => {
   });
 });
 
-describe("runCli — tool failures (exit 2)", () => {
+describe("runCli - tool failures (exit 2)", () => {
   it("fails actionably when package.json is missing", async () => {
     const empty = await mkdtemp(join(tmpdir(), "rn-doctor-empty-"));
     try {
@@ -137,7 +137,7 @@ describe("runCli — tool failures (exit 2)", () => {
   });
 });
 
-describe("runCli — end-to-end (enrich -> policy -> report)", () => {
+describe("runCli - end-to-end (enrich -> policy -> report)", () => {
   it("default policy, pretty output: reports findings and exits 1", async () => {
     const { io, stdout, stderr } = makeIo(dir);
     const code = await runCli(["--no-cache"], io);
@@ -270,7 +270,7 @@ interface JsonDoc {
 // parallel; give the git-backed suites generous timeouts and retried cleanup.
 const GIT_TEST_TIMEOUT = 30_000;
 
-describe("runCli — --changed-only (real git fixture)", { timeout: GIT_TEST_TIMEOUT }, () => {
+describe("runCli - --changed-only (real git fixture)", { timeout: GIT_TEST_TIMEOUT }, () => {
   let repo: string;
 
   beforeEach(async () => {
@@ -422,7 +422,7 @@ async function writeWorkspaceTree(root: string): Promise<void> {
   await writeFile(join(root, "packages", "b", "package.json"), WS_B, "utf8");
 }
 
-describe("runCli — --workspaces", () => {
+describe("runCli - --workspaces", () => {
   it("groups the pretty report by manifest and counts all of them", async () => {
     await writeWorkspaceTree(dir);
     const { io, stdout } = makeIo(dir);
@@ -513,7 +513,7 @@ describe("runCli — --workspaces", () => {
   });
 });
 
-describe("runCli — GitHub annotations", () => {
+describe("runCli - GitHub annotations", () => {
   it("auto-emits workflow commands when GITHUB_ACTIONS=true", async () => {
     const { io, stdout } = makeIo(dir, { GITHUB_ACTIONS: "true" });
     await runCli(["--no-cache"], io);

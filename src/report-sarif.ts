@@ -12,7 +12,7 @@ import { VERSION } from "./version.js";
 
 const INFORMATION_URI = "https://www.npmjs.com/package/react-native-doctor-ci";
 
-/** Fixed rule order — also the `ruleIndex` mapping for results. */
+/** Fixed rule order - also the `ruleIndex` mapping for results. */
 const RULE_IDS: readonly RuleId[] = [
   "newArchitecture",
   "newArchUnknown",

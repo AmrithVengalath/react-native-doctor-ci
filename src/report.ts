@@ -14,7 +14,7 @@ import type { EnrichmentWarning } from "./types.js";
  */
 export interface ReportFinding extends Finding {
   /**
-   * Manifest path relative to the run cwd, POSIX separators — `package.json`
+   * Manifest path relative to the run cwd, POSIX separators - `package.json`
    * for single-manifest runs, e.g. `packages/a/package.json` under
    * `--workspaces`.
    */
@@ -53,7 +53,7 @@ export function locateFindings(
 
 /**
  * Counts of findings by effect. Suppressed findings are counted only under
- * `suppressed` — they keep their severity for display but have no effect on
+ * `suppressed` - they keep their severity for display but have no effect on
  * the run outcome.
  */
 export interface FindingSummary {
@@ -91,7 +91,7 @@ export function summarize(findings: readonly Finding[]): FindingSummary {
  * @remarks
  * Returns `1` iff any finding is an unsuppressed `error`; warnings, notes,
  * and allowlist-suppressed findings never fail the run. Exit code `2`
- * (tool failure) is decided by the CLI, not here — a report that rendered
+ * (tool failure) is decided by the CLI, not here - a report that rendered
  * at all is not a tool failure.
  */
 export function computeExitCode(findings: readonly Finding[]): 0 | 1 {

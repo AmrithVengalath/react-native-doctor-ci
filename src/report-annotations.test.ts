@@ -28,7 +28,7 @@ function reportOf(findings: Finding[]): Report {
 
 const noLine = (): number | null => null;
 
-describe("renderAnnotations — GitHub workflow commands", () => {
+describe("renderAnnotations - GitHub workflow commands", () => {
   it("emits one command per finding, targeting the resolved package.json line", () => {
     const text = renderAnnotations(reportOf([finding({ message: "bad dep" })]), () => 7);
     expect(text).toBe(

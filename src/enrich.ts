@@ -223,7 +223,7 @@ export async function enrichDependencies(
   for (const name of toFetch) {
     const npm = (npmData as any)[name] || {};
     const dirCheck = (directoryCheckData as any)[name] || {};
-    // `dirCheck` is `{}` for unlisted packages, and `Boolean({})` is truthy — so listing
+    // `dirCheck` is `{}` for unlisted packages, and `Boolean({})` is truthy - so listing
     // must be decided by presence of the key, not the object's truthiness.
     const listedInDirectory = Object.prototype.hasOwnProperty.call(directoryCheckData, name);
     const dirDetail = (directoryDetails as any)[name] || {};
@@ -361,7 +361,7 @@ export async function enrichDependencies(
       depWarnings.push({
         source: "npm",
         dependency: name,
-        message: `Package not found on npm registry — verify the package name is correct`,
+        message: `Package not found on npm registry - verify the package name is correct`,
       });
     }
     if (npm.error) {
@@ -429,7 +429,7 @@ export async function enrichDependencies(
 
     enriched.push(enrichedDep);
 
-    // Write to cache — but never persist a degraded (transient-failure) entry, so a
+    // Write to cache - but never persist a degraded (transient-failure) entry, so a
     // momentary rate-limit or network blip can't poison future runs with stale unknowns.
     if (!options.noCache) {
       const candidate = { fetchedAt: new Date().toISOString(), enriched: enrichedDep };

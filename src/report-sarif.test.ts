@@ -66,7 +66,7 @@ function render(policy: (typeof MATRIX_POLICIES)[number][1]): SarifLog {
   return JSON.parse(renderSarif(matrixReport(policy), { lineOf })) as SarifLog;
 }
 
-describe("renderSarif — validates against the SARIF 2.1.0 schema", () => {
+describe("renderSarif - validates against the SARIF 2.1.0 schema", () => {
   it.each(MATRIX_POLICIES)("8-fixture matrix under the %s policy", (_label, policy) => {
     const doc: unknown = JSON.parse(renderSarif(matrixReport(policy), { lineOf }));
     const valid = validate(doc);
@@ -82,7 +82,7 @@ describe("renderSarif — validates against the SARIF 2.1.0 schema", () => {
   });
 });
 
-describe("renderSarif — content mapping", () => {
+describe("renderSarif - content mapping", () => {
   it("maps severities to SARIF levels (error/warning/note)", () => {
     const log = render(DEFAULT_POLICY);
     const levels = new Set(log.runs[0]?.results.map((r) => r.level));

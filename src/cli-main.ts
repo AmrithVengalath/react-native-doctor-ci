@@ -77,7 +77,7 @@ export interface CliIo {
   readonly git?: GitRunner;
 }
 
-/** The CLI exit codes — a stable contract CI depends on. */
+/** The CLI exit codes - a stable contract CI depends on. */
 export type ExitCode = 0 | 1 | 2;
 
 interface CliFlags {

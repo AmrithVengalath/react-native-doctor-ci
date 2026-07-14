@@ -15,7 +15,7 @@ import type { Report } from "./report.js";
  * field), and the document contains no timestamps or environment-dependent
  * values, so identical inputs always serialize identically. The `version`
  * field is the document format version, bumped only on breaking shape
- * changes — additive fields (like `file`, added for `--workspaces`) do not
+ * changes - additive fields (like `file`, added for `--workspaces`) do not
  * bump it.
  *
  * @param report - The report to render.

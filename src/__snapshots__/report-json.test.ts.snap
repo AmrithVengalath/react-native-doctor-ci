@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`renderJson — stable-ordered machine output > 8-fixture matrix under the default policy 1`] = `
+exports[`renderJson - stable-ordered machine output > 8-fixture matrix under the default policy 1`] = `
 "{
   "version": 1,
   "summary": {
@@ -117,7 +117,7 @@ exports[`renderJson — stable-ordered machine output > 8-fixture matrix under t
 "
 `;
 
-exports[`renderJson — stable-ordered machine output > 8-fixture matrix under the lenient-with-allowlist policy 1`] = `
+exports[`renderJson - stable-ordered machine output > 8-fixture matrix under the lenient-with-allowlist policy 1`] = `
 "{
   "version": 1,
   "summary": {
@@ -133,7 +133,7 @@ exports[`renderJson — stable-ordered machine output > 8-fixture matrix under t
       "package": "react-native-htmltext",
       "rule": "githubArchived",
       "severity": "error",
-      "message": "The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: \\"<why>\\", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext (\\"fork planned Q3 2025\\") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.",
+      "message": "The GitHub repository for react-native-htmltext is archived (read-only): no fixes or releases will land. Replace it or pin a fork. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: \\"<why>\\", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext (\\"fork planned Q3 2025\\") expired on 2026-01-01 - escalated to error. Renew the entry with a new expiry, or remove the dependency.",
       "evidenceUrl": "https://github.com/siuying/react-native-htmltext",
       "suppressedBy": null
     },
@@ -142,7 +142,7 @@ exports[`renderJson — stable-ordered machine output > 8-fixture matrix under t
       "package": "react-native-htmltext",
       "rule": "directoryUnmaintained",
       "severity": "error",
-      "message": "react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: \\"<why>\\", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext (\\"fork planned Q3 2025\\") expired on 2026-01-01 — escalated to error. Renew the entry with a new expiry, or remove the dependency.",
+      "message": "react-native-htmltext is flagged as unmaintained in the RN Directory. Plan a migration to a maintained alternative. If this is intentional, allowlist it in .rn-doctor.yml: { package: react-native-htmltext, reason: \\"<why>\\", expires: YYYY-MM-DD }. NOTE: the allowlist entry for react-native-htmltext (\\"fork planned Q3 2025\\") expired on 2026-01-01 - escalated to error. Renew the entry with a new expiry, or remove the dependency.",
       "evidenceUrl": "https://reactnative.directory/?search=react-native-htmltext",
       "suppressedBy": null
     },
@@ -231,7 +231,7 @@ exports[`renderJson — stable-ordered machine output > 8-fixture matrix under t
 "
 `;
 
-exports[`renderJson — stable-ordered machine output > 8-fixture matrix under the strict-all-deps policy 1`] = `
+exports[`renderJson - stable-ordered machine output > 8-fixture matrix under the strict-all-deps policy 1`] = `
 "{
   "version": 1,
   "summary": {

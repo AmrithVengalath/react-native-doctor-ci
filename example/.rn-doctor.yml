@@ -1,4 +1,4 @@
-# Example .rn-doctor.yml — the rn-doctor policy file.
+# Example .rn-doctor.yml - the rn-doctor policy file.
 #
 # Put this at the root of your repo (next to package.json). Every key is
 # optional; anything you leave out falls back to the built-in default shown
@@ -12,7 +12,7 @@ rules:
 
   # How to treat a dependency whose New Architecture support is unknown
   # (not in the directory, no codegenConfig). Missing data is a warning by
-  # default — honest, not alarmist. error | warn | off
+  # default - honest, not alarmist. error | warn | off
   newArchUnknown: warn
 
   # Staleness thresholds on the latest npm publish, in months.
@@ -46,6 +46,6 @@ allow:
   - package: react-native-legacy-thing
     reason: "Replacement planned for Q4; tracked in TICKET-123"
     # Optional expiry (YYYY-MM-DD). After this date the allow no longer
-    # suppresses anything — findings escalate to errors so stale exceptions
+    # suppresses anything - findings escalate to errors so stale exceptions
     # cannot outlive their justification.
     expires: 2027-01-31

@@ -19,7 +19,7 @@ export type Signal<T> =
  */
 export type UnknownReason =
   | "not-in-directory"        // Normal, not a warning
-  | "no-repo-url"             // No repository URL found — normal
+  | "no-repo-url"             // No repository URL found - normal
   | "no-github-token"         // No GITHUB_TOKEN configured
   | "github-rate-limited"     // Circuit breaker tripped (API 403/429)
   | "github-error"            // Network, 5xx, or parse error from GitHub

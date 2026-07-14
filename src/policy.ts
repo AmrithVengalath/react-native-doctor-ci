@@ -1,7 +1,7 @@
 /**
  * Policy engine: turns enriched dependency records into findings.
  *
- * Pure and deterministic — no I/O, no clock reads unless the caller omits
+ * Pure and deterministic - no I/O, no clock reads unless the caller omits
  * `options.now`. Reporters (Phase 3) consume the `Finding[]` output.
  *
  * @packageDocumentation
@@ -99,7 +99,7 @@ export const DEFAULT_POLICY: Policy = {
 };
 
 /**
- * Severity of an emitted finding. `note` is informational — it never fails
+ * Severity of an emitted finding. `note` is informational - it never fails
  * the run and is not subject to allowlisting.
  */
 export type FindingSeverity = "error" | "warn" | "note";
@@ -180,7 +180,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
   const hits: RuleHit[] = [];
   const name = dep.name;
 
-  // newArchitecture — directory says "unsupported", or unknown-with-codegen note.
+  // newArchitecture - directory says "unsupported", or unknown-with-codegen note.
   if (rules.newArchitecture !== "off") {
     if (dep.newArch.tier === "unsupported") {
       hits.push({
@@ -205,7 +205,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
     }
   }
 
-  // newArchUnknown — no directory verdict and no codegen hint.
+  // newArchUnknown - no directory verdict and no codegen hint.
   if (rules.newArchUnknown !== "off" && dep.newArch.tier === "unknown") {
     hits.push({
       rule: "newArchUnknown",
@@ -218,7 +218,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
     });
   }
 
-  // lastPublish — staleness of the latest npm publish.
+  // lastPublish - staleness of the latest npm publish.
   if (rules.lastPublish !== "off" && dep.lastPublish.known) {
     const publishedAt = Date.parse(dep.lastPublish.value.date);
     if (!Number.isNaN(publishedAt)) {
@@ -243,7 +243,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
     }
   }
 
-  // githubArchived — the repository is read-only.
+  // githubArchived - the repository is read-only.
   if (rules.githubArchived !== "off" && dep.github.archived.known && dep.github.archived.value) {
     hits.push({
       rule: "githubArchived",
@@ -255,7 +255,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
     });
   }
 
-  // npmDeprecated — the package owner marked it deprecated.
+  // npmDeprecated - the package owner marked it deprecated.
   if (rules.npmDeprecated !== "off" && dep.npm.deprecated.known && dep.npm.deprecated.value.deprecated) {
     const upstream = dep.npm.deprecated.value.message;
     hits.push({
@@ -269,7 +269,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
     });
   }
 
-  // directoryUnmaintained — RN Directory's own unmaintained flag.
+  // directoryUnmaintained - RN Directory's own unmaintained flag.
   if (rules.directoryUnmaintained !== "off" && dep.directory.listed && dep.directory.unmaintained) {
     hits.push({
       rule: "directoryUnmaintained",
@@ -299,7 +299,7 @@ function evaluateRules(dep: EnrichedDependency, rules: PolicyRules, now: Date): 
  * @param dependencies - Enriched records from the enrichment engine.
  * @param policy - The effective policy (see {@link DEFAULT_POLICY}).
  * @param options - Evaluation options; inject `now` for deterministic output.
- * @returns All findings, unfiltered — including suppressed ones.
+ * @returns All findings, unfiltered - including suppressed ones.
  */
 export function evaluatePolicy(
   dependencies: readonly EnrichedDependency[],
@@ -327,7 +327,7 @@ export function evaluatePolicy(
           },
         });
       } else {
-        // Expired allow: the grace period is over — escalate to error.
+        // Expired allow: the grace period is over - escalate to error.
         const { entry } = allowState;
         findings.push({
           package: dep.name,
@@ -336,7 +336,7 @@ export function evaluatePolicy(
           message:
             `${hit.message} NOTE: the allowlist entry for ${dep.name}` +
             (entry.reason ? ` ("${entry.reason}")` : "") +
-            ` expired on ${entry.expires ?? "?"} — escalated to error. ` +
+            ` expired on ${entry.expires ?? "?"} - escalated to error. ` +
             `Renew the entry with a new expiry, or remove the dependency.`,
           evidenceUrl: hit.evidenceUrl,
           suppressedBy: null,
