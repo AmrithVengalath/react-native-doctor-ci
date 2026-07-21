@@ -4,8 +4,7 @@ import { http } from "msw";
 import { computeNewArchTier, enrichDependencies } from "./enrich.js";
 import { createMswServer } from "./testing/msw-server.js";
 import { ENRICHED_FIXTURES, FIXTURE_PACKAGE_NAMES } from "./testing/fixture-packages.js";
-import { parseGithubUrl as parseNpmRepoUrl } from "./sources/npm.js";
-import { parseGithubUrl as parseGithubRepoUrl } from "./sources/github.js";
+import { parseGithubUrl } from "./sources/github.js";
 
 const server = createMswServer();
 
@@ -112,20 +111,25 @@ describe("computeNewArchTier", () => {
 
 describe("parseGithubUrl", () => {
   it("parses npm-style repository URLs (git+ prefix, .git suffix)", () => {
-    expect(parseNpmRepoUrl("git+https://github.com/facebook/react-native.git")).toEqual({
+    expect(parseGithubUrl("git+https://github.com/facebook/react-native.git")).toEqual({
       owner: "facebook",
       repo: "react-native",
     });
-    expect(parseNpmRepoUrl("https://gitlab.com/foo/bar")).toBeUndefined();
-    expect(parseNpmRepoUrl(undefined)).toBeUndefined();
+    expect(parseGithubUrl("https://gitlab.com/foo/bar")).toBeUndefined();
+    expect(parseGithubUrl(undefined)).toBeUndefined();
   });
 
-  it("parses https and ssh GitHub URLs", () => {
-    expect(parseGithubRepoUrl("https://github.com/react-native-webview/react-native-webview")).toEqual({
+  it("parses https and ssh GitHub URLs, deep links, and dotted repo names", () => {
+    expect(parseGithubUrl("https://github.com/react-native-webview/react-native-webview")).toEqual({
       owner: "react-native-webview",
       repo: "react-native-webview",
     });
-    expect(parseGithubRepoUrl("git@github.com:owner/repo.git")).toEqual({ owner: "owner", repo: "repo" });
-    expect(parseGithubRepoUrl("https://example.com/owner/repo")).toBeUndefined();
+    expect(parseGithubUrl("git@github.com:owner/repo.git")).toEqual({ owner: "owner", repo: "repo" });
+    // A /tree/... deep link resolves to the repo, and a dotted repo name survives.
+    expect(parseGithubUrl("https://github.com/vercel/next.js/tree/canary")).toEqual({
+      owner: "vercel",
+      repo: "next.js",
+    });
+    expect(parseGithubUrl("https://example.com/owner/repo")).toBeUndefined();
   });
 });

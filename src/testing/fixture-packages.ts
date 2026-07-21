@@ -151,7 +151,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       tier: "supported",
       evidence: { directoryVerdict: "supported", hasCodegenConfig: false },
     },
-    lastPublish: { known: false, reason: "not-in-directory" },
+    lastPublish: { known: false, reason: "no-release-date" },
   },
 
   [FIXTURE_PACKAGE_NAMES.stale24mo]: {
@@ -188,7 +188,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       tier: "unsupported",
       evidence: { directoryVerdict: "unsupported", hasCodegenConfig: false },
     },
-    lastPublish: { known: false, reason: "not-in-directory" },
+    lastPublish: { known: false, reason: "no-release-date" },
   },
 
   [FIXTURE_PACKAGE_NAMES.directoryUnmaintained]: {
@@ -225,7 +225,7 @@ export const ENRICHED_FIXTURES: Record<string, EnrichedDependency> = {
       tier: "unknown",
       evidence: { directoryVerdict: "untested", hasCodegenConfig: false },
     },
-    lastPublish: { known: false, reason: "not-in-directory" },
+    lastPublish: { known: false, reason: "no-release-date" },
   },
 
   [FIXTURE_PACKAGE_NAMES.newArchUnsupported]: {

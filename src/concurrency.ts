@@ -13,27 +13,24 @@
 export async function mapWithConcurrency<T, R>(
   items: readonly T[],
   fn: (item: T) => Promise<R>,
-  concurrency: number = 8,
+  concurrency = 8,
 ): Promise<R[]> {
   if (items.length === 0) {
     return [];
   }
 
-  // Use a mutable array to hold results
-  const results: any[] = Array.from({ length: items.length });
+  const results = new Array<R>(items.length);
   let index = 0;
 
   const worker = async (): Promise<void> => {
     let currentIndex = index++;
     while (currentIndex < items.length) {
-      (results as any)[currentIndex] = await fn(items[currentIndex]!);
+      results[currentIndex] = await fn(items[currentIndex]!);
       currentIndex = index++;
     }
   };
 
-  const workers = Array(Math.min(concurrency, items.length))
-    .fill(null)
-    .map(() => worker());
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => worker());
 
   await Promise.all(workers);
   return results;

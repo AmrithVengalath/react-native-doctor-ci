@@ -3,39 +3,72 @@
  * @packageDocumentation
  */
 
-import { fetchJson, type FetchOutcome } from "../http.js";
+import { fetchJson, isRecord, type FetchOutcome } from "../http.js";
 
 /**
- * Version object from npm registry `/latest` endpoint.
+ * The subset of the npm registry `/latest` version manifest the enrichment
+ * engine reads. All fields beyond name/version are optional and best-effort.
  */
 export interface NpmVersionManifest {
   readonly name: string;
   readonly version: string;
+  /** npm's deprecation message; a non-empty string means deprecated. */
   readonly deprecated?: string;
+  /** Present (any shape) when the package ships New-Architecture codegen. */
   readonly codegenConfig?: unknown;
   readonly peerDependencies?: Record<string, string>;
-  readonly dependencies?: Record<string, string>;
   readonly repository?: { readonly type?: string; readonly url?: string };
-  readonly files?: string[];
+  readonly files?: readonly string[];
 }
 
 /**
- * Search result from npm search API.
+ * Narrow an unknown npm `/latest` payload to {@link NpmVersionManifest},
+ * dropping malformed fields rather than throwing - the engine degrades missing
+ * data to `unknown`, it never fails a run on a surprising response shape.
+ * @param data - The JSON-parsed response body.
  */
-export interface NpmSearchResult {
-  readonly objects?: Array<{
-    readonly package: {
-      readonly name: string;
-      readonly version: string;
-      readonly date: string;
-    };
-  }>;
+export function parseNpmManifest(data: unknown): NpmVersionManifest {
+  if (!isRecord(data)) return { name: "", version: "" };
+
+  const repository = data["repository"];
+  const peerDependencies = data["peerDependencies"];
+  const files = data["files"];
+
+  return {
+    name: typeof data["name"] === "string" ? data["name"] : "",
+    version: typeof data["version"] === "string" ? data["version"] : "",
+    ...(typeof data["deprecated"] === "string" ? { deprecated: data["deprecated"] } : {}),
+    ...("codegenConfig" in data ? { codegenConfig: data["codegenConfig"] } : {}),
+    ...(isRecord(peerDependencies)
+      ? { peerDependencies: filterStringMap(peerDependencies) }
+      : {}),
+    ...(isRecord(repository) && typeof repository["url"] === "string"
+      ? {
+          repository: {
+            url: repository["url"],
+            ...(typeof repository["type"] === "string" ? { type: repository["type"] } : {}),
+          },
+        }
+      : {}),
+    ...(Array.isArray(files)
+      ? { files: files.filter((f): f is string => typeof f === "string") }
+      : {}),
+  };
+}
+
+/** Keep only string-valued entries of an object (e.g. a dependency map). */
+function filterStringMap(value: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, val] of Object.entries(value)) {
+    if (typeof val === "string") out[key] = val;
+  }
+  return out;
 }
 
 /**
  * Fetch the latest version manifest from npm registry.
  * @param packageName - The npm package name (may be scoped, e.g. `@react-native-community/netinfo`).
- * @returns The version manifest or an outcome describing what went wrong.
+ * @returns The parsed version manifest or an outcome describing what went wrong.
  */
 export async function fetchNpmLatestManifest(
   packageName: string,
@@ -43,7 +76,24 @@ export async function fetchNpmLatestManifest(
   const encoded = encodeURIComponent(packageName);
   const url = `https://registry.npmjs.org/${encoded}/latest`;
 
-  return fetchJson<NpmVersionManifest>(url);
+  const outcome = await fetchJson<unknown>(url);
+  if (outcome.status !== "ok") return outcome;
+  return { status: "ok", data: parseNpmManifest(outcome.data) };
+}
+
+/** Extract the top search hit's name and publish date, or null when absent. */
+function parseNpmSearchTop(data: unknown): { name: string; date: string } | null {
+  if (!isRecord(data)) return null;
+  const objects = data["objects"];
+  if (!Array.isArray(objects) || objects.length === 0) return null;
+  const first: unknown = objects[0];
+  if (!isRecord(first)) return null;
+  const pkg = first["package"];
+  if (!isRecord(pkg)) return null;
+  const name = pkg["name"];
+  const date = pkg["date"];
+  if (typeof name !== "string" || typeof date !== "string") return null;
+  return { name, date };
 }
 
 /**
@@ -59,46 +109,14 @@ export async function searchNpmForPackage(
   url.searchParams.set("text", packageName);
   url.searchParams.set("size", "1");
 
-  const outcome = await fetchJson<NpmSearchResult>(url.toString());
-
+  const outcome = await fetchJson<unknown>(url.toString());
   if (outcome.status !== "ok") {
     return outcome;
   }
 
-  const topResult = outcome.data.objects?.[0];
-  if (!topResult) {
+  const top = parseNpmSearchTop(outcome.data);
+  if (!top) {
     return { status: "error", message: "No search results" };
   }
-
-  return {
-    status: "ok",
-    data: {
-      name: topResult.package.name,
-      date: topResult.package.date,
-    },
-  };
-}
-
-/**
- * Parse a repository URL to extract owner and repo for GitHub (if applicable).
- * @param repoUrl - A repository URL, e.g. `git+https://github.com/owner/repo.git`.
- * @returns `{ owner, repo }` if it's a GitHub URL, or `undefined` otherwise.
- */
-export function parseGithubUrl(
-  repoUrl: string | undefined,
-): { readonly owner: string; readonly repo: string } | undefined {
-  if (!repoUrl) {
-    return undefined;
-  }
-
-  // Match patterns like:
-  // git+https://github.com/owner/repo.git
-  // https://github.com/owner/repo.git
-  // github.com/owner/repo
-  const match = repoUrl.match(/github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?$/i);
-  if (!match || !match[1] || !match[2]) {
-    return undefined;
-  }
-
-  return { owner: match[1], repo: match[2] };
+  return { status: "ok", data: top };
 }

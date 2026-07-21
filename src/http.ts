@@ -17,6 +17,15 @@ export type FetchOutcome<T> =
   | { status: "error"; message: string };
 
 /**
+ * Narrow an unknown JSON value to a plain object record. Shared by the data
+ * sources' response parsers.
+ * @param value - Any JSON-parsed value.
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
  * Fetch JSON from a URL, returning a structured outcome instead of throwing.
  * @param url - The URL to fetch.
  * @param options - Optional headers and timeout.

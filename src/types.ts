@@ -19,6 +19,7 @@ export type Signal<T> =
  */
 export type UnknownReason =
   | "not-in-directory"        // Normal, not a warning
+  | "no-release-date"         // Listed in the directory, but no release date recorded - normal
   | "no-repo-url"             // No repository URL found - normal
   | "no-github-token"         // No GITHUB_TOKEN configured
   | "github-rate-limited"     // Circuit breaker tripped (API 403/429)

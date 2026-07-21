@@ -22,12 +22,12 @@ export default tseslint.config(
     },
   },
   {
-    // The data-source boundary parses inherently-untyped external JSON (npm registry,
-    // RN Directory, GitHub) and the MSW fixtures that emulate it, so `any` is
-    // unavoidable here. Typed runtime validation is a deliberate future hardening step
-    // (see DECISIONS ADR); until then these files opt out of the unsafe-any family.
-    // Public, typed surfaces (types.ts, the Phase 2+ policy engine) stay strict.
-    files: ["src/sources/**/*.ts", "src/enrich.ts", "src/concurrency.ts", "src/testing/**/*.ts"],
+    // External JSON (npm registry, RN Directory, GitHub) is narrowed into typed
+    // records by the source-boundary parsers (`parseNpmManifest`,
+    // `parseGithubRepo`, `fetchLibraryDetail`), so the sources and the
+    // orchestrator are fully type-checked. Only the MSW fixtures that *emulate*
+    // those raw responses still hold hand-authored `any`.
+    files: ["src/testing/**/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
@@ -36,6 +36,13 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
+    },
+  },
+  {
+    // CI-only Node scripts (not part of the typechecked src project).
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { console: "readonly", process: "readonly" },
     },
   },
 );

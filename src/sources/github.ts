@@ -1,9 +1,10 @@
 /**
- * GitHub API data source with rate-limit circuit breaker.
+ * GitHub API data source with rate-limit circuit breaker, plus the single
+ * GitHub-URL parser used across the enrichment engine.
  * @packageDocumentation
  */
 
-import { fetchJson, type FetchOutcome } from "../http.js";
+import { fetchJson, isRecord, type FetchOutcome } from "../http.js";
 
 /**
  * Repository metadata from GitHub API.
@@ -35,6 +36,20 @@ export class GitHubCircuitBreaker {
 }
 
 /**
+ * Narrow an unknown GitHub API payload to the repository fields the engine
+ * reads. Malformed fields are dropped (treated as absent) rather than thrown -
+ * missing data degrades to `unknown` downstream, never a failed run.
+ * @param data - The JSON-parsed response body.
+ */
+export function parseGithubRepo(data: unknown): GithubRepoInfo {
+  if (!isRecord(data)) return {};
+  return {
+    ...(typeof data["archived"] === "boolean" ? { archived: data["archived"] } : {}),
+    ...(typeof data["pushed_at"] === "string" ? { pushed_at: data["pushed_at"] } : {}),
+  };
+}
+
+/**
  * Fetch repository metadata from GitHub API.
  * @param owner - Repository owner (e.g. "facebook").
  * @param repo - Repository name (e.g. "react-native").
@@ -53,12 +68,28 @@ export async function fetchGithubRepo(
     headers["authorization"] = `Bearer ${token}`;
   }
 
-  return fetchJson<GithubRepoInfo>(url, { headers });
+  const outcome = await fetchJson<unknown>(url, { headers });
+  if (outcome.status !== "ok") return outcome;
+  return { status: "ok", data: parseGithubRepo(outcome.data) };
 }
 
+// Owner and repo allow word chars, dots, and hyphens (repo non-greedy so a
+// trailing `.git` is stripped but a dotted name like `next.js` survives).
+// The leading boundary keeps `notgithub.com` from false-matching; a trailing
+// `/...`, `?...`, or `#...` (deep links like /tree/main) is ignored.
+const GITHUB_URL_PATTERN =
+  /(?:^|[/@\s])github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:[/?#].*)?$/i;
+
 /**
- * Parse a GitHub repository URL to extract owner and repo.
- * @param url - A GitHub URL like `https://github.com/owner/repo` or `git@github.com:owner/repo.git`.
+ * Parse any GitHub repository URL form to its owner and repo.
+ *
+ * @remarks
+ * Accepts the shapes that occur in npm `repository` metadata and RN Directory
+ * records: `git+https://github.com/owner/repo.git`, plain https URLs (with or
+ * without `.git` or a `/tree/...` suffix), bare `github.com/owner/repo`, and
+ * ssh `git@github.com:owner/repo.git`. Non-GitHub URLs return `undefined`.
+ *
+ * @param url - A repository URL, or `undefined`.
  * @returns `{ owner, repo }` if parseable as GitHub, or `undefined` otherwise.
  */
 export function parseGithubUrl(
@@ -68,15 +99,7 @@ export function parseGithubUrl(
     return undefined;
   }
 
-  // Match patterns:
-  // https://github.com/owner/repo
-  // https://github.com/owner/repo.git
-  // https://github.com/owner/repo/tree/...
-  // git@github.com:owner/repo.git
-  const match = url.match(
-    /(?:https:\/\/github\.com|git@github\.com:)\/?([^/]+)\/([^/.]+)(?:\.git|\/|$)/i,
-  );
-
+  const match = url.match(GITHUB_URL_PATTERN);
   if (!match || !match[1] || !match[2]) {
     return undefined;
   }
