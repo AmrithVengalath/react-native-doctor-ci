@@ -34,7 +34,12 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Ensure npm supports trusted publishing
+        run: npm install -g npm@latest # trusted publishing needs npm CLI >= 11.5.1
+
       - name: Publish to npm
-        run: pnpm publish --provenance --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Trusted Publishing (OIDC) - no token. Requires a Trusted Publisher
+        # configured on npmjs.com for this repo/workflow/environment, and
+        # `id-token: write` above. pnpm 11's OIDC publish path is currently
+        # broken (pnpm/pnpm#11513), so this step uses npm directly.
+        run: npm publish --provenance
