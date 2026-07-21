@@ -98,7 +98,10 @@ export function renderSarif(report: Report, options: SarifOptions = {}): string 
             ],
           }
         : {}),
-      ...(f.evidenceUrl !== null ? { hostedViewerUri: f.evidenceUrl } : {}),
+      // Evidence goes in the result property bag: `hostedViewerUri` means "a
+      // URI at which *this result* can be viewed", which GitHub code scanning
+      // ignores, so it would silently drop the link. `properties` round-trips.
+      ...(f.evidenceUrl !== null ? { properties: { evidenceUrl: f.evidenceUrl } } : {}),
     };
   });
 
