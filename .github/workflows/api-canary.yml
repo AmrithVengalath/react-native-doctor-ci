@@ -1,0 +1,59 @@
+name: API canary
+
+# rn-doctor depends on three external response shapes (npm registry, React
+# Native Directory, GitHub API). This job hits the real endpoints weekly and
+# opens an issue if the enrichment stops parsing - a shape drift that the
+# mocked unit suite cannot catch. Runs on a schedule or on demand.
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: api-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Run live API canary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/api-canary.mjs
+
+      - name: Open an issue on drift
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: Upstream API drift detected by the canary
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          existing=$(gh issue list --state open --search "$TITLE in:title" --json number --jq 'length')
+          if [ "$existing" = "0" ]; then
+            gh issue create --title "$TITLE" --body \
+              "The scheduled API canary failed: an upstream response shape (npm registry, React Native Directory, or GitHub) may have changed, or the endpoint was unreachable. Investigate the parsers in \`src/sources/\` against the live responses. Failed run: $RUN_URL"
+          else
+            echo "An open drift issue already exists; not filing a duplicate."
+          fi
