@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.2...v0.1.3) (2026-07-21)
+
+### Bug Fixes
+
+* **enrich:** unwrap the RN Directory library-detail response by package name ([274cdea](https://github.com/AmrithVengalath/react-native-doctor-ci/commit/274cdeacb58e7dc607d3bcd44c1b779bffe99fef))
+* **report:** move the SARIF evidence link out of hostedViewerUri ([8c8fd17](https://github.com/AmrithVengalath/react-native-doctor-ci/commit/8c8fd1756d35bdb338a8e00c873c9d9d206e725a))
+
 ## [0.1.2](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.1...v0.1.2) (2026-07-13)
 
 ### Bug Fixes
