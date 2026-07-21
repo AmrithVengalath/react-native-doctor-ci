@@ -45,6 +45,23 @@ describe("enrichDependencies - 8-fixture acceptance matrix", () => {
   });
 });
 
+describe("enrichDependencies - RN Directory detail envelope", () => {
+  it("unwraps the name-keyed /api/library response into directory-fallback signals", async () => {
+    // The archived fixture has no GitHub API entry, so its archived/pushedAt can
+    // only come from the RN Directory detail - which the real endpoint returns
+    // keyed by package name (`{ "<pkg>": {...} }`). Reading that envelope
+    // unwrapped would leave these signals null; this guards against regressing
+    // to that shape.
+    const result = await enrichDependencies([FIXTURE_PACKAGE_NAMES.archived], { noCache: true });
+    const dep = result.dependencies[0];
+
+    expect(dep?.github.source).toBe("directory-fallback");
+    expect(dep?.github.archived).toEqual({ known: true, value: true, source: "directory-fallback" });
+    expect(dep?.directory.githubArchived).toBe(true);
+    expect(dep?.directory.matchingScoreModifiers).toContain("Unmaintained");
+  });
+});
+
 describe("enrichDependencies - GitHub rate-limit degradation", () => {
   it("trips the breaker, warns at run level, and falls back to directory data", async () => {
     // Force every GitHub call to 403 so the circuit breaker trips on the first repo.

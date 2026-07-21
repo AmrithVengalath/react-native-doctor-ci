@@ -134,7 +134,10 @@ export function createFixtureHandlers() {
 
       const fixture = directoryDetailFixtures[name];
       if (fixture) {
-        return new Response(JSON.stringify(fixture), { status: 200 });
+        // The real endpoint keys the detail by package name; emulate that so
+        // the parsing round-trip matches production (a bare object would let a
+        // regression to unwrapped reads pass silently).
+        return new Response(JSON.stringify({ [name]: fixture }), { status: 200 });
       }
 
       return new Response(JSON.stringify({}), { status: 200 });

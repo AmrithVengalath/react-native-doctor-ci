@@ -71,8 +71,15 @@ export async function checkLibraries(
 /**
  * Fetch full library details for a single package from RN Directory.
  * Unknown packages return an empty object (not an error).
+ *
+ * @remarks
+ * The endpoint keys the detail by package name -
+ * `{ "react-native-webview": { githubUrl, github, npm, ... } }` - so the
+ * response is unwrapped here before being handed back. An unlisted package
+ * yields `{}`.
+ *
  * @param packageName - The npm package name.
- * @returns The library detail or an empty object if not found.
+ * @returns The unwrapped library detail, or an empty object if not found.
  */
 export async function fetchLibraryDetail(
   packageName: string,
@@ -80,18 +87,23 @@ export async function fetchLibraryDetail(
   const url = new URL("https://reactnative.directory/api/library");
   url.searchParams.set("name", packageName);
 
-  const outcome = await fetchJson<DirectoryLibraryDetail>(url.toString());
+  const outcome = await fetchJson<Record<string, DirectoryLibraryDetail>>(url.toString());
 
   if (outcome.status !== "ok") {
     return outcome;
   }
 
-  // Empty object `{}` means not found
-  if (Object.keys(outcome.data).length === 0) {
+  const keys = Object.keys(outcome.data);
+  // Prefer the exact name; fall back to a lone entry in case the registry
+  // normalizes the key (casing, etc.). Absent / empty object = not listed.
+  const detail =
+    outcome.data[packageName] ?? (keys.length === 1 ? outcome.data[keys[0]!] : undefined);
+
+  if (!detail || typeof detail !== "object") {
     return { status: "ok", data: {} };
   }
 
-  return outcome;
+  return { status: "ok", data: detail };
 }
 
 /**
@@ -105,7 +117,7 @@ export async function fetchLibraryDetails(
   packageNames: readonly string[],
   concurrency = 8,
 ): Promise<Record<string, DirectoryLibraryDetail>> {
-  const outcomes: any[] = await mapWithConcurrency(
+  const outcomes = await mapWithConcurrency(
     packageNames,
     (name) => fetchLibraryDetail(name),
     concurrency,
@@ -113,12 +125,12 @@ export async function fetchLibraryDetails(
 
   const results: Record<string, DirectoryLibraryDetail> = {};
 
-  for (let i = 0; i < outcomes.length; i++) {
-    const outcome = (outcomes as any)[i];
+  packageNames.forEach((name, i) => {
+    const outcome = outcomes[i];
     if (outcome?.status === "ok") {
-      results[(packageNames as any)[i]] = outcome.data;
+      results[name] = outcome.data;
     }
-  }
+  });
 
   return results;
 }
