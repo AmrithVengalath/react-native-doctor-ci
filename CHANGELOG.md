@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.3...v0.2.0) (2026-08-27)
+
+### Features
+
+* **ci:** first-class Azure DevOps, GitLab CI and Bitbucket Pipelines support ([abef0d7](https://github.com/AmrithVengalath/react-native-doctor-ci/commit/abef0d7e24e50407323f1cfd00de29d58c1075c6))
+
 ## [0.1.3](https://github.com/AmrithVengalath/react-native-doctor-ci/compare/v0.1.2...v0.1.3) (2026-07-21)
 
 ### Bug Fixes
