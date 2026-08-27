@@ -59,6 +59,25 @@ Note that `--sarif`/`--json` still return exit `1` on policy errors. If you want
 the SARIF upload to run regardless, put the `rn-doctor --sarif` step behind
 `continue-on-error: true` and keep the gating step separate.
 
+## CI platform quirks
+
+- **No inline feedback appears.** The platform is auto-detected from
+  `GITHUB_ACTIONS`, `TF_BUILD`, `GITLAB_CI`, or `BITBUCKET_BUILD_NUMBER`. Force
+  one with `--ci <platform>`; check nothing passes `--no-annotations`.
+- **Azure Pipelines.** `##vso[task.logissue]` paths are repo-relative, so run
+  rn-doctor from the repository root (same caveat as GitHub annotations). Azure
+  has no notice level: notes and allowlisted findings appear only in the pretty
+  log output, never as issues.
+- **GitLab.** The merge-request Code Quality widget only appears when the
+  artifact is declared under `artifacts: reports: codequality:` - writing the
+  file alone isn't enough. The widget diff shows *new* findings relative to the
+  target branch; the full list is on the pipeline's Code Quality tab.
+- **Bitbucket.** Code Insights are published through the Pipelines-local auth
+  proxy (`localhost:29418`), which only exists inside a running pipeline. Run
+  locally (or on another CI) with Bitbucket forced, and rn-doctor prints a
+  warning and continues - the upload can never fail the run or change the exit
+  code.
+
 ## A finding looks wrong
 
 Every finding carries an evidence link (npm, the RN Directory, or GitHub) so you

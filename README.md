@@ -92,8 +92,13 @@ rn-doctor [options]
   --base <ref>       Base ref for --changed-only (default: origin/main)
   --workspaces       Also check every workspace package.json
   --no-cache         Bypass the enrichment cache (read and write)
-  --annotations      Force GitHub annotations on (auto in GitHub Actions)
-  --no-annotations   Force GitHub annotations off
+  --ci <platform>    CI platform for inline feedback: auto (default), github,
+                     azure, bitbucket, gitlab, none
+  --annotations      Force inline CI feedback on (GitHub annotations when no
+                     platform is selected or detected)
+  --no-annotations   Force inline CI feedback off (every platform)
+  --gitlab-codequality <path>
+                     Write a GitLab Code Quality JSON report to <path>
   -v, --version      Print the version
   -h, --help         Show help
 ```
@@ -106,7 +111,7 @@ rn-doctor [options]
 | `1`  | Policy errors found. |
 | `2`  | Tool failure: bad flags, unreadable `package.json`, invalid policy file, git failure under `--changed-only`. |
 
-**Environment**: `GITHUB_TOKEN` (optional, enables GitHub repo enrichment), `NO_COLOR` (disables ANSI color), `GITHUB_ACTIONS=true` (auto-enables annotations).
+**Environment**: `GITHUB_TOKEN` (optional, enables GitHub repo enrichment - useful on every CI platform, not just GitHub), `NO_COLOR` (disables ANSI color). The CI platform is auto-detected from `GITHUB_ACTIONS`, `TF_BUILD`, `GITLAB_CI`, or `BITBUCKET_BUILD_NUMBER` - see [CI platforms](#ci-platforms).
 
 Only `dependencies` are checked - `devDependencies` never ship in your app.
 
@@ -168,6 +173,56 @@ allow:
   ```
 
 - **GitHub annotations**: emitted automatically inside GitHub Actions, resolved to the dependency's real line in `package.json` (string-escape-aware - a same-named key under `scripts` can't false-match).
+
+## CI platforms
+
+The exit-code contract and every output format work on any CI. On top of that, rn-doctor speaks each platform's native inline-feedback mechanism, auto-detected from the environment (`--ci <platform>` forces one; `--no-annotations` turns it off everywhere):
+
+| Platform | Detected via | Inline feedback |
+| -------- | ------------ | --------------- |
+| GitHub Actions | `GITHUB_ACTIONS=true` | Workflow-command annotations on the PR diff |
+| Azure Pipelines | `TF_BUILD=True` | `##vso[task.logissue]` errors/warnings in the run's Issues pane |
+| GitLab CI | `GITLAB_CI=true` | Code Quality report artifact (pass `--gitlab-codequality`) |
+| Bitbucket Pipelines | `BITBUCKET_BUILD_NUMBER` | Code Insights report + PR annotations (via the Pipelines proxy) |
+
+**Azure Pipelines** (`azure-pipelines.yml`) - annotations appear automatically:
+
+```yaml
+steps:
+  - task: UseNode@1
+    inputs:
+      version: "22.x"
+  - script: npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base origin/main
+    displayName: rn-doctor
+```
+
+**GitLab CI** (`.gitlab-ci.yml`) - declare the artifact so findings show in the merge-request widget:
+
+```yaml
+rn-doctor:
+  image: node:22
+  script:
+    - npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base "origin/$CI_DEFAULT_BRANCH" --gitlab-codequality gl-code-quality-report.json
+  artifacts:
+    when: always
+    reports:
+      codequality: gl-code-quality-report.json
+```
+
+**Bitbucket Pipelines** (`bitbucket-pipelines.yml`) - the Code Insights report and annotations are published through the pipeline's local auth proxy, no token needed:
+
+```yaml
+pipelines:
+  pull-requests:
+    "**":
+      - step:
+          name: rn-doctor
+          image: node:22
+          script:
+            - npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base "origin/$BITBUCKET_PR_DESTINATION_BRANCH"
+```
+
+An insights/upload hiccup never fails the run - the policy verdict (exit code) is always decided locally. Copy-paste pipeline files live in [`example/ci/`](example/ci/).
 
 ## Changed-only and monorepos
 

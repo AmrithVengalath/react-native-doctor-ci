@@ -1,0 +1,22 @@
+# Example Bitbucket Pipelines configuration for rn-doctor.
+# A Code Insights report (plus per-finding annotations on the PR diff) is
+# published automatically through the pipeline's local auth proxy - no token
+# or extra configuration needed. The gate itself is the exit code.
+image: node:22
+
+clone:
+  depth: full # rn-doctor --changed-only needs the merge-base with the destination branch
+
+pipelines:
+  pull-requests:
+    "**":
+      - step:
+          name: rn-doctor
+          script:
+            - npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base "origin/$BITBUCKET_PR_DESTINATION_BRANCH"
+  branches:
+    main:
+      - step:
+          name: rn-doctor (full scan)
+          script:
+            - npx --yes --package react-native-doctor-ci rn-doctor

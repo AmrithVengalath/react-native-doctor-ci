@@ -1,0 +1,29 @@
+# Example Azure Pipelines job for rn-doctor.
+# ##vso[task.logissue] annotations are emitted automatically (TF_BUILD is set);
+# errors appear in the run's Issues pane and fail the job via exit code 1.
+trigger:
+  branches:
+    include: [main]
+
+pr:
+  branches:
+    include: [main]
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+    fetchDepth: 0 # rn-doctor --changed-only needs the merge-base with the target branch
+
+  - task: UseNode@1
+    inputs:
+      version: "22.x"
+
+  - script: npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base "origin/$(System.PullRequest.TargetBranchName)"
+    displayName: rn-doctor
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+
+  - script: npx --yes --package react-native-doctor-ci rn-doctor
+    displayName: rn-doctor (full scan)
+    condition: ne(variables['Build.Reason'], 'PullRequest')

@@ -37,6 +37,27 @@ export type { SarifOptions } from "./report-sarif.js";
 export { renderPretty } from "./report-pretty.js";
 export type { PrettyOptions } from "./report-pretty.js";
 export { renderAnnotations } from "./report-annotations.js";
+
+// Re-export public API for multi-CI support
+export { detectCi } from "./ci-detect.js";
+export type { CiPlatformId } from "./ci-detect.js";
+export { renderAzureAnnotations } from "./report-azure.js";
+export { renderGitlabCodeQuality } from "./report-gitlab.js";
+export type { GitlabCodeQualityIssue } from "./report-gitlab.js";
+export {
+  BITBUCKET_REPORT_ID,
+  bitbucketTargetFromEnv,
+  buildBitbucketAnnotations,
+  buildBitbucketReport,
+  publishBitbucketInsights,
+} from "./bitbucket-insights.js";
+export type {
+  BitbucketAnnotationPayload,
+  BitbucketPublishOptions,
+  BitbucketReportPayload,
+  BitbucketTarget,
+  ProxyHttpRequest,
+} from "./bitbucket-insights.js";
 export {
   ManifestError,
   entriesFromManifestText,

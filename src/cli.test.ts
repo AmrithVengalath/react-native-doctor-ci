@@ -1,9 +1,10 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
+import type { ProxyHttpRequest } from "./bitbucket-insights.js";
 import { runCli } from "./cli-main.js";
 import type { CliIo } from "./cli-main.js";
 import { findDependencyLine } from "./package-json.js";
@@ -538,5 +539,136 @@ describe("runCli - GitHub annotations", () => {
     const { io, stdout } = makeIo(dir, { GITHUB_ACTIONS: "true" });
     await runCli(["--no-cache", "--json"], io);
     expect(stdout()).not.toContain("::error");
+  });
+});
+
+describe("runCli - multi-CI platforms", () => {
+  it("rejects an invalid --ci value (exit 2)", async () => {
+    const { io, stderr } = makeIo(dir);
+    expect(await runCli(["--ci", "jenkins"], io)).toBe(2);
+    expect(stderr()).toContain('invalid --ci value "jenkins"');
+  });
+
+  it("rejects --ci none with --annotations (exit 2)", async () => {
+    const { io, stderr } = makeIo(dir);
+    expect(await runCli(["--ci", "none", "--annotations"], io)).toBe(2);
+    expect(stderr()).toContain("mutually exclusive");
+  });
+
+  it("--ci azure forces ##vso logging commands outside any CI", async () => {
+    const { io, stdout } = makeIo(dir);
+    await runCli(["--no-cache", "--ci", "azure"], io);
+
+    const line = findDependencyLine(MANIFEST_TEXT, FIXTURE_PACKAGE_NAMES.archived);
+    expect(stdout()).toContain(
+      `##vso[task.logissue type=error;sourcepath=package.json;linenumber=${String(line)};code=`,
+    );
+    expect(stdout()).not.toContain("::error");
+  });
+
+  it("auto-emits ##vso commands when TF_BUILD=True", async () => {
+    const { io, stdout } = makeIo(dir, { TF_BUILD: "True" });
+    await runCli(["--no-cache"], io);
+    expect(stdout()).toContain("##vso[task.logissue type=error;");
+  });
+
+  it("--no-annotations disables inline feedback on Azure too", async () => {
+    const { io, stdout } = makeIo(dir, { TF_BUILD: "True" });
+    await runCli(["--no-cache", "--no-annotations"], io);
+    expect(stdout()).not.toContain("##vso");
+  });
+
+  it("--ci none disables auto-detected inline feedback", async () => {
+    const { io, stdout } = makeIo(dir, { GITHUB_ACTIONS: "true" });
+    await runCli(["--no-cache", "--ci", "none"], io);
+    expect(stdout()).not.toContain("::error");
+  });
+
+  it("emits no GitHub commands under GitLab CI and hints at --gitlab-codequality", async () => {
+    const { io, stdout, stderr } = makeIo(dir, { GITLAB_CI: "true" });
+    await runCli(["--no-cache"], io);
+    expect(stdout()).not.toContain("::error");
+    expect(stdout()).not.toContain("##vso");
+    expect(stderr()).toContain("--gitlab-codequality");
+  });
+
+  it("--gitlab-codequality writes the Code Quality artifact next to pretty output", async () => {
+    const { io } = makeIo(dir, { GITLAB_CI: "true" });
+    expect(await runCli(["--no-cache", "--gitlab-codequality", "gl.json"], io)).toBe(1);
+
+    const issues = JSON.parse(await readFile(join(dir, "gl.json"), "utf8")) as {
+      check_name: string;
+      location: { lines: { begin: number } };
+    }[];
+    expect(issues.length).toBeGreaterThan(0);
+    expect(issues.every((i) => i.check_name.startsWith("rn-doctor/"))).toBe(true);
+    const line = findDependencyLine(MANIFEST_TEXT, FIXTURE_PACKAGE_NAMES.archived);
+    expect(issues.some((i) => i.location.lines.begin === line)).toBe(true);
+  });
+
+  it("--gitlab-codequality also works alongside --json without touching stdout", async () => {
+    const { io, stdout } = makeIo(dir);
+    await runCli(["--no-cache", "--json", "--gitlab-codequality", "gl.json"], io);
+    expect(() => {
+      JSON.parse(stdout());
+    }).not.toThrow();
+    const artifact = await readFile(join(dir, "gl.json"), "utf8");
+    expect(() => {
+      JSON.parse(artifact);
+    }).not.toThrow();
+  });
+
+  it("fails with exit 2 when the Code Quality artifact cannot be written", async () => {
+    const { io, stderr } = makeIo(dir);
+    expect(
+      await runCli(["--no-cache", "--gitlab-codequality", "no-such-dir/gl.json"], io),
+    ).toBe(2);
+    expect(stderr()).toContain("could not write the Code Quality report");
+  });
+
+  it("skips Bitbucket Code Insights with a warning when the Pipelines env is incomplete", async () => {
+    const { io, stdout, stderr } = makeIo(dir, { BITBUCKET_BUILD_NUMBER: "7" });
+    const code = await runCli(["--no-cache"], io);
+    expect(code).toBe(1);
+    expect(stderr()).toContain("Bitbucket Code Insights skipped");
+    expect(stdout()).not.toContain("::error");
+  });
+
+  it("publishes Bitbucket Code Insights through the transport and keeps the policy exit code", async () => {
+    const sent: { method: string; url: string; body: string }[] = [];
+    const transport: ProxyHttpRequest = (opts) => {
+      sent.push({ method: opts.method, url: opts.url, body: opts.body });
+      return Promise.resolve({ ok: true, status: 200 });
+    };
+    const { io, stderr } = makeIo(dir, {
+      BITBUCKET_BUILD_NUMBER: "7",
+      BITBUCKET_WORKSPACE: "acme",
+      BITBUCKET_REPO_SLUG: "app",
+      BITBUCKET_COMMIT: "abc123",
+    });
+    const code = await runCli(["--no-cache"], { ...io, bitbucketTransport: transport });
+    expect(code).toBe(1);
+    expect(stderr()).not.toContain("Bitbucket");
+    expect(sent[0]?.method).toBe("PUT");
+    expect(sent[0]?.url).toBe(
+      "http://api.bitbucket.org/2.0/repositories/acme/app/commit/abc123/reports/rn-doctor",
+    );
+    expect(sent[0]?.body).toContain('"reporter":"rn-doctor"');
+    expect(sent[1]?.method).toBe("POST");
+    expect(sent[1]?.url.endsWith("/annotations")).toBe(true);
+  });
+
+  it("warns and continues when the Bitbucket upload fails", async () => {
+    const transport: ProxyHttpRequest = () => Promise.resolve({ ok: false, status: 500 });
+    const { io, stderr } = makeIo(dir, {
+      BITBUCKET_BUILD_NUMBER: "7",
+      BITBUCKET_WORKSPACE: "acme",
+      BITBUCKET_REPO_SLUG: "app",
+      BITBUCKET_COMMIT: "abc123",
+    });
+    const code = await runCli(["--no-cache"], { ...io, bitbucketTransport: transport });
+    expect(code).toBe(1);
+    expect(stderr()).toContain("Bitbucket Code Insights report upload failed (HTTP 500)");
+    expect(stderr()).toContain("continuing");
   });
 });

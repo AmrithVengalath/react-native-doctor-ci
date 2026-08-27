@@ -6,9 +6,14 @@
  * @packageDocumentation
  */
 
-import { join } from "node:path";
+import { writeFile } from "node:fs/promises";
+import { isAbsolute, join } from "node:path";
 import { parseArgs } from "node:util";
 
+import { bitbucketTargetFromEnv, publishBitbucketInsights } from "./bitbucket-insights.js";
+import type { ProxyHttpRequest } from "./bitbucket-insights.js";
+import { detectCi } from "./ci-detect.js";
+import type { CiPlatformId } from "./ci-detect.js";
 import { diffDependencies } from "./changed-deps.js";
 import { enrichDependencies } from "./enrich.js";
 import { GitError, createGitRunner, readFileAtCommit, resolveBaseCommit } from "./git.js";
@@ -24,6 +29,8 @@ import type { ProjectManifest } from "./package-json.js";
 import { evaluatePolicy } from "./policy.js";
 import { loadPolicy, PolicyError } from "./policy-file.js";
 import { renderAnnotations } from "./report-annotations.js";
+import { renderAzureAnnotations } from "./report-azure.js";
+import { renderGitlabCodeQuality } from "./report-gitlab.js";
 import { renderJson } from "./report-json.js";
 import { renderPretty } from "./report-pretty.js";
 import { renderSarif } from "./report-sarif.js";
@@ -51,8 +58,16 @@ Options:
   --workspaces       Also check every workspace package.json (npm/yarn
                      "workspaces" or pnpm-workspace.yaml), grouped by manifest
   --no-cache         Bypass the enrichment cache (read and write)
-  --annotations      Force GitHub annotations on (default: auto in GitHub Actions)
-  --no-annotations   Force GitHub annotations off
+  --ci <platform>    CI platform to emit inline feedback for: auto (default),
+                     github (workflow-command annotations), azure (##vso
+                     logging commands), bitbucket (Code Insights via the
+                     Pipelines proxy), gitlab (see --gitlab-codequality), none
+  --annotations      Force inline CI feedback on (GitHub annotations when no
+                     platform is selected or detected)
+  --no-annotations   Force inline CI feedback off (every platform)
+  --gitlab-codequality <path>
+                     Write a GitLab Code Quality (CodeClimate) JSON report to
+                     <path>; declare it via "artifacts: reports: codequality"
   -v, --version      Print the version and exit
   -h, --help         Show this help and exit
 
@@ -75,6 +90,8 @@ export interface CliIo {
   readonly now?: Date;
   /** Git process runner for --changed-only; defaults to the real git binary. */
   readonly git?: GitRunner;
+  /** Bitbucket Code Insights transport; defaults to the real Pipelines proxy. */
+  readonly bitbucketTransport?: ProxyHttpRequest;
 }
 
 /** The CLI exit codes - a stable contract CI depends on. */
@@ -88,10 +105,28 @@ interface CliFlags {
   readonly base: string | undefined;
   readonly workspaces: boolean;
   readonly noCache: boolean;
+  readonly ci: string;
   readonly annotations: boolean;
   readonly noAnnotations: boolean;
+  readonly gitlabCodequality: string | undefined;
   readonly version: boolean;
   readonly help: boolean;
+}
+
+/** What `--ci` accepts: a platform, `none`, or `auto` (detect). */
+type CiChoice = CiPlatformId | "auto";
+
+const CI_CHOICES: ReadonlySet<string> = new Set([
+  "auto",
+  "github",
+  "azure",
+  "bitbucket",
+  "gitlab",
+  "none",
+]);
+
+function isCiChoice(value: string): value is CiChoice {
+  return CI_CHOICES.has(value);
 }
 
 function parseCliArgs(argv: readonly string[]): CliFlags {
@@ -109,8 +144,10 @@ function parseCliArgs(argv: readonly string[]): CliFlags {
       workspaces: { type: "boolean", default: false },
       // Node 20 parseArgs has no allowNegative; model --no-* as literal flags.
       "no-cache": { type: "boolean", default: false },
+      ci: { type: "string", default: "auto" },
       annotations: { type: "boolean", default: false },
       "no-annotations": { type: "boolean", default: false },
+      "gitlab-codequality": { type: "string" },
       version: { type: "boolean", short: "v", default: false },
       help: { type: "boolean", short: "h", default: false },
     },
@@ -124,8 +161,10 @@ function parseCliArgs(argv: readonly string[]): CliFlags {
     base: values.base,
     workspaces: values.workspaces,
     noCache: values["no-cache"],
+    ci: values.ci,
     annotations: values.annotations,
     noAnnotations: values["no-annotations"],
+    gitlabCodequality: values["gitlab-codequality"],
     version: values.version,
     help: values.help,
   };
@@ -161,6 +200,17 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<ExitCo
   }
   if (flags.annotations && flags.noAnnotations) {
     io.stderr.write("rn-doctor: --annotations and --no-annotations are mutually exclusive.\n");
+    return 2;
+  }
+  const ciChoice = flags.ci;
+  if (!isCiChoice(ciChoice)) {
+    io.stderr.write(
+      `rn-doctor: invalid --ci value "${ciChoice}" (expected auto, github, azure, bitbucket, gitlab or none).\n`,
+    );
+    return 2;
+  }
+  if (flags.ci === "none" && flags.annotations) {
+    io.stderr.write("rn-doctor: --ci none and --annotations are mutually exclusive.\n");
     return 2;
   }
   if (flags.base !== undefined && !flags.changedOnly) {
@@ -269,10 +319,58 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<ExitCo
       const color = Boolean(io.stdout.isTTY) && !io.env.NO_COLOR;
       io.stdout.write(renderPretty(report, { color }));
 
-      const emitAnnotations =
-        flags.annotations || (io.env.GITHUB_ACTIONS === "true" && !flags.noAnnotations);
-      if (emitAnnotations) {
+      // Which platform gets inline feedback: an explicit --ci wins; --ci auto
+      // detects from the environment; bare --annotations outside any CI keeps
+      // its historical meaning of GitHub workflow commands.
+      const resolvedCi: CiPlatformId = ciChoice === "auto" ? detectCi(io.env) : ciChoice;
+      const inlineTarget: CiPlatformId =
+        resolvedCi === "none" && flags.annotations ? "github" : resolvedCi;
+      const emitInline = !flags.noAnnotations && (flags.annotations || resolvedCi !== "none");
+
+      if (emitInline && inlineTarget === "github") {
         io.stdout.write(renderAnnotations(report, lineOf));
+      } else if (emitInline && inlineTarget === "azure") {
+        io.stdout.write(renderAzureAnnotations(report, lineOf));
+      } else if (emitInline && inlineTarget === "bitbucket") {
+        const target = bitbucketTargetFromEnv(io.env);
+        if (target === null) {
+          io.stderr.write(
+            "rn-doctor: warning - Bitbucket Code Insights skipped (BITBUCKET_WORKSPACE/BITBUCKET_REPO_SLUG/BITBUCKET_COMMIT are not all set; are you inside Bitbucket Pipelines?).\n",
+          );
+        } else {
+          const published = await publishBitbucketInsights(report, lineOf, target, {
+            ...(io.env.RN_DOCTOR_BITBUCKET_PROXY
+              ? { proxyUrl: io.env.RN_DOCTOR_BITBUCKET_PROXY }
+              : {}),
+            ...(io.bitbucketTransport ? { put: io.bitbucketTransport } : {}),
+          });
+          if (!published.ok) {
+            io.stderr.write(
+              `rn-doctor: warning - Bitbucket Code Insights ${published.message}; continuing.\n`,
+            );
+          }
+        }
+      } else if (emitInline && inlineTarget === "gitlab" && flags.gitlabCodequality === undefined) {
+        io.stderr.write(
+          "rn-doctor: note - GitLab CI detected; pass --gitlab-codequality <path> and declare it under \"artifacts: reports: codequality\" to surface findings in the merge-request widget.\n",
+        );
+      }
+    }
+
+    // The Code Quality artifact is file output, orthogonal to the stdout
+    // format - usable alongside --json/--sarif too. An explicitly requested
+    // artifact that cannot be written is a tool failure, not a degradation.
+    if (flags.gitlabCodequality !== undefined) {
+      const outPath = isAbsolute(flags.gitlabCodequality)
+        ? flags.gitlabCodequality
+        : join(io.cwd, flags.gitlabCodequality);
+      try {
+        await writeFile(outPath, renderGitlabCodeQuality(report, lineOf), "utf8");
+      } catch (err) {
+        io.stderr.write(
+          `rn-doctor: could not write the Code Quality report to ${flags.gitlabCodequality} - ${err instanceof Error ? err.message : String(err)}\n`,
+        );
+        return 2;
       }
     }
 

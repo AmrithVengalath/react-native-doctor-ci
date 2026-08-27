@@ -1,0 +1,15 @@
+# Example GitLab CI job for rn-doctor.
+# The Code Quality artifact surfaces findings in the merge-request widget and
+# on the diff; the job itself gates via exit code 1.
+rn-doctor:
+  image: node:22
+  variables:
+    GIT_DEPTH: 0 # rn-doctor --changed-only needs the merge-base with the default branch
+  script:
+    - npx --yes --package react-native-doctor-ci rn-doctor --changed-only --base "origin/$CI_DEFAULT_BRANCH" --gitlab-codequality gl-code-quality-report.json
+  artifacts:
+    when: always # upload the report even when the gate fails
+    reports:
+      codequality: gl-code-quality-report.json
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
