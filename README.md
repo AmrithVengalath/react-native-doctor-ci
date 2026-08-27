@@ -40,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0 # required for changed-only (merge-base diff)
 
-      - uses: AmrithVengalath/react-native-doctor-ci/action@v0.1.2
+      - uses: AmrithVengalath/react-native-doctor-ci/action@v0.2.0
         with:
           changed-only: "true"
           base: origin/${{ github.base_ref }}
@@ -61,9 +61,9 @@ npx --yes --package react-native-doctor-ci rn-doctor
 ## GitHub Action reference
 
 ```yaml
-- uses: AmrithVengalath/react-native-doctor-ci/action@v0.1.2
+- uses: AmrithVengalath/react-native-doctor-ci/action@v0.2.0
   with:
-    version: "0.1.2"          # npm version/dist-tag to run (default: latest)
+    version: "0.2.0"          # npm version/dist-tag to run (default: latest)
     policy: ".rn-doctor.yml"  # policy file path (default: auto-detect)
     changed-only: "true"      # only deps added/changed vs base (default: "false")
     base: origin/main         # base ref for changed-only (default: origin/main)

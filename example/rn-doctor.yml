@@ -23,7 +23,7 @@ jobs:
           # merge-base of the PR branch and the base branch.
           fetch-depth: 0
 
-      - uses: AmrithVengalath/react-native-doctor-ci/action@v0.1.2
+      - uses: AmrithVengalath/react-native-doctor-ci/action@v0.2.0
         with:
           changed-only: "true"
           base: origin/${{ github.base_ref }}
